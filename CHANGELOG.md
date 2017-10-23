@@ -1,3 +1,15 @@
+Version 127:
+
+API Changes:
+
+* Remove serializer::keep_alive
+
+Actions Required:
+
+* Call message::keep_alive instead of serializer::keep_alive
+
+--------------------------------------------------------------------------------
+
 Version 126:
 
 * Add CppCon2017 presentation link
