@@ -11,7 +11,7 @@
 #define BOOST_BEAST_CORE_IMPL_FILE_POSIX_IPP
 
 #if ! defined(BOOST_BEAST_NO_POSIX_FADVISE)
-# if defined(__APPLE__)
+# if defined(__APPLE__) || (defined(ANDROID) && (__ANDROID_API__ < 21))
 #  define BOOST_BEAST_NO_POSIX_FADVISE
 # endif
 #endif
