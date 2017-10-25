@@ -1,3 +1,9 @@
+Version 128:
+
+* Add BOOST_BEAST_NO_POSIX_FADVISE
+
+--------------------------------------------------------------------------------
+
 Version 127:
 
 API Changes:
