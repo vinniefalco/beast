@@ -14,6 +14,7 @@ add_subdirectory (fast)
 add_subdirectory (small)
 add_subdirectory (stackless)
 add_subdirectory (sync)
+add_subdirectory (task)
 
 if (OPENSSL_FOUND)
     add_subdirectory (async-ssl)

@@ -482,17 +482,16 @@ do_http_session(
     try
     {
         beast::error_code ec;
+        beast::flat_buffer buffer;
         for(;;)
         {
             http::request_parser<http::string_body> parser;
-            beast::flat_buffer buffer;
             ec = co_await http::read(sock, buffer, parser);
             if(ec)
             {
                 fail(ec, "read");
                 break;
             }
-            cppcoro::task<beast::error_code> st;
             write_lambda write(sock);
             handle_request(doc_root, parser.release(), write);
             ec = co_await write.wait(); // small hack because operator co_await don't chain
