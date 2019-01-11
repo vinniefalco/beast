@@ -2,6 +2,8 @@ Version 207
 
 * Send from the strand
 * Pass the correct handler in basic_timeout_stream
+* Add get_lowest_layer free function
+* Add lowest_layer_type metafunction
 
 API Changes:
 
