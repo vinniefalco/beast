@@ -196,42 +196,55 @@ without explicit locking by requiring all access to I/O objects to be
 performed within a
 [@boost:/doc/html/boost_asio/overview/core/strands.html ['strand]].
 
-[heading Asynchronous Model]
+[heading Universal Model]
 
-Completion handlers are native to networking but cause an inversion of the
-flow of control. Alternatives to using completion handlers include futures,
-fibers, coroutines, or user-defined types. Networking supports these
-alternatives with a feature that provides these hooks for customizing
-initiating functions:
+Because completion handlers cause an inversion of the flow of control,
+sometimes other methods of attaching a continuation are desired. Networking
+provides the
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3747.pdf ['Universal Model for Asynchronous Operations]],
+providing a customizable means for transforming the signature of the initiating
+function to use other types of objects and methods in place of a completion
+handler callback. For example to call to write a string to a socket
+asynchronously, using a `std::future` to receive the number of bytes transferred
+thusly looks like this:
 
-* Converting a custom ['CompletionToken] to a "real" handler type
+[code_core_1_refresher_7]
 
-* Creating the initiating function's result
+This functionality is enabled by passing the variable
+[@boost:/doc/html/boost_asio/reference/use_future.html `net::use_future`]
+(of type
+[@boost:/doc/html/boost_asio/reference/use_future_t.html `net::use_future_t<>`])
+in place of the completion handler. The same `async_write` function overload
+can work with a
+[@https://en.wikipedia.org/wiki/Fiber_(computer_science) ['fiber]]
+launched with
+[@boost:/doc/html/boost_asio/reference/spawn/overload1.html `net::spawn`]:
 
+[code_core_1_refresher_8]
 
+In both of these cases, an object with a specific type is used in place of
+the completion handler, and the return value of the initiating function
+is transformed from `void` to `std::future<std::size_t>` or `std::size_t`.
+The return type transformation is supported by customization points in the
+initiating function signature. Here is the signature for `net::async_write`:
 
+[code_core_1_refresher_9]
 
-
-[/
-            The system
-            for customizing the return type of initiating functions and obtaining the
-            actual completion handler from a completion token is known as the
-            [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3747.pdf ['Universal Model for Asynchronous Operations]] (N3747).
-            This generic example shows the signature for an initiating function to
-            write some text to a stream:
-            ```
-                template <class AsyncWriteStream, class WriteHandler>
-                auto async_hello (AsyncWriteStream& stream, WriteHandler&& handler);
-            ```
-
-            The signature for the initiating function includes a
-            ['completion token],
-            which is a generalization of completion handlers permitting user-defined
-            types such as futures or coroutines to be substituted as the mechanism by
-            which the results of the asynchronous operation are delivered. The following
-            statements all call the same function to asynchronously read data from a
-            stream, but use a different method for receiving the results:
-]
+The type of the function's return value is determined by the
+[@boost:/doc/html/boost_asio/reference/async_result.html `net::async_result`]
+customization point, which comes with specializations for common library
+types such as `std::future` and may also be specialized for user-defined
+types. The universal model also provides the
+[@boost:/doc/html/boost_asio/reference/async_completion.html `net::async_completion`]
+customization point for transforming
+the `handler` argument (called a
+[@boost:/doc/html/boost_asio/reference/asynchronous_operations/completion_token.html ['CompletionToken]]
+in this context) into an underlying completion handler to be invoked when the
+operation is complete. This transformed, internal handler is responsible for
+the finalizing step that delivers the result of the operation to the caller.
+For example, when using `net::use_future` the internal handler will deliver
+the result by calling `std::promise::set_value` on the promise object
+returned by the initiating function.
 
 [/-----------------------------------------------------------------------------]
 

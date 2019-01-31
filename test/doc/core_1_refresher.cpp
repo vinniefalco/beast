@@ -12,6 +12,9 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <boost/beast/_experimental/test/stream.hpp>
 #include <boost/asio/buffer.hpp>
+#include <boost/asio/spawn.hpp>
+#include <boost/asio/use_future.hpp>
+#include <boost/asio/write.hpp>
 #include <assert.h>
 
 namespace boost {
@@ -26,12 +29,14 @@ snippets()
     {
     //[code_core_1_refresher_1
         net::const_buffer cb("Hello, world!", 13);
-        assert(string_view(reinterpret_cast<char const*>(cb.data()), cb.size()) == "Hello, world!");
+        assert(string_view(reinterpret_cast<char const*>(
+            cb.data()), cb.size()) == "Hello, world!");
 
         char storage[13];
         net::mutable_buffer mb(storage, sizeof(storage));
         std::memcpy(mb.data(), cb.data(), mb.size());
-        assert(string_view(reinterpret_cast<char const*>(mb.data()), mb.size()) == "Hello, world!");
+        assert(string_view(reinterpret_cast<char const*>(
+            mb.data()), mb.size()) == "Hello, world!");
     //]
     }
     {
@@ -50,6 +55,23 @@ snippets()
                     assert(bytes_transferred == 13);
                 else
                     std::cerr << "Error: " << ec.message() << "\n";
+            });
+    //]
+    }
+    {
+    //[code_core_1_refresher_7
+        std::future<std::size_t> f = net::async_write(sock,
+            net::const_buffer("Hello, world!", 13), net::use_future);
+    //]
+    }
+    {
+    //[code_core_1_refresher_8
+        net::spawn(
+            [&sock](net::yield_context yield)
+            {
+                std::size_t bytes_transferred = net::async_write(sock,
+                    net::const_buffer("Hello, world!", 13), yield);
+                (void)bytes_transferred;
             });
     //]
     }
@@ -90,6 +112,34 @@ void async_hello (AsyncWriteStream& stream, WriteHandler&& handler)
     net::async_write (stream,
         net::buffer("Hello, world!", 13),
         std::forward<WriteHandler>(handler));
+}
+//]
+
+//[code_core_1_refresher_9
+template<
+    class AsyncWriteStream,
+    class ConstBufferSequence,
+    class WriteHandler>
+auto
+async_write(
+    AsyncWriteStream& stream,
+    ConstBufferSequence const& buffers,
+    WriteHandler&& handler) ->
+        typename net::async_result<                     // return-type customization point
+            typename std::decay<WriteHandler>::type,    // type used to specialize async_result
+            void(error_code, std::size_t)               // signature of the corresponding completion handler
+                >::return_type
+{
+    net::async_completion<
+        WriteHandler,                                   // completion handler customization point
+        void(error_code, std::size_t)                   // signature of the corresponding completion handler
+            > init(handler);                            // variable which holds the corresponding completion handler
+
+    (void)init.completion_handler;                      // the underlying completion handler used for the operation
+
+    // ...launch the operation (omitted for clarity)
+
+    return init.result.get();
 }
 //]
 
