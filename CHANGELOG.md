@@ -1,3 +1,9 @@
+Version 214:
+
+* Add string_buffer
+
+--------------------------------------------------------------------------------
+
 Version 213:
 
 * Fix posix_file::close handling of EINTR

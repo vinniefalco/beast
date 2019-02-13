@@ -511,7 +511,7 @@ public:
         @b ConstBufferSequence that represents the next chunk of
         message data. If the length of this buffer sequence is
         one, the implementation will not allocate additional memory.
-        The class @ref beast::flat_buffer is provided as one way to
+        The class @ref beast::basic_flat_buffer is provided as one way to
         meet this requirement
 
         @param ec Set to the error, if any occurred.

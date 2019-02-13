@@ -360,6 +360,9 @@ test_mutable_dynamic_buffer(
 } // detail
 
 /** Test an instance of a dynamic buffer or mutable dynamic buffer.
+
+    @param b The dynamic buffer to copy for tests.
+    Should have max_size() == 30
 */
 template<class DynamicBuffer>
 void
@@ -483,7 +486,7 @@ test_dynamic_buffer(
     {
         DynamicBuffer b(b0);
         if(BEAST_EXPECT(
-            b.max_size() + 1 > b.max_size()))
+            b0.max_size() + 1 > b.max_size()))
         {
             try
             {

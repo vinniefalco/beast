@@ -20,6 +20,7 @@ add_executable (tests-beast-experimental
     icy_stream.cpp
     ssl_stream.cpp
     stream.cpp
+    string_buffer.cpp
 )
 
 set_property(TARGET tests-beast-experimental PROPERTY FOLDER "tests")

@@ -355,10 +355,13 @@
         <entry valign="top">
           <bridgehead renderas="sect3">Classes</bridgehead>
           <simplelist type="vert" columns="1">
+            <member><link linkend="beast.ref.boost__beast__basic_string_buffer">basic_string_buffer</link>&nbsp;<emphasis role="green">&#128946;</emphasis></member>
             <member><link linkend="beast.ref.boost__beast__ssl_stream">ssl_stream</link></member>
+            <member><link linkend="beast.ref.boost__beast__string_buffer">string_buffer</link>&nbsp;<emphasis role="green">&#128946;</emphasis></member>
             <member><link linkend="beast.ref.boost__beast__http__icy_stream">http::icy_stream</link></member>
             <member><link linkend="beast.ref.boost__beast__test__fail_count">test::fail_count</link></member>
             <member><link linkend="beast.ref.boost__beast__test__stream">test::stream</link></member>
+            <member><link linkend="beast.ref.boost__beast__wstring_buffer">wstring_buffer</link>&nbsp;<emphasis role="green">&#128946;</emphasis></member>
           </simplelist>
         </entry>
         <entry valign="top">
