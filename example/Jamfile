@@ -27,6 +27,7 @@ project /boost/beast/example
 build-project advanced ;
 build-project http ;
 build-project websocket ;
+build-project socks ;
 
 # legacy
 build-project echo-op ;

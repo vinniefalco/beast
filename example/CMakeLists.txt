@@ -10,5 +10,6 @@
 add_subdirectory (advanced)
 add_subdirectory (http)
 add_subdirectory (websocket)
+add_subdirectory (socks)
 
 add_subdirectory (echo-op)
