@@ -10,11 +10,11 @@
 #ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
 #define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
 
+#include <boost/beast/core/detail/config.hpp>
+#include <boost/beast/core/string.hpp>
 #include <string>
 #include <stdexcept>
 #include <iterator>
-
-#include <boost/beast/core/string.hpp>
 
 namespace socks {
 

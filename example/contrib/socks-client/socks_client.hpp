@@ -10,29 +10,27 @@
 #ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_SOCKS_CLIENT_HPP
 #define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_SOCKS_CLIENT_HPP
 
+#include <boost/beast/core/detail/config.hpp>
+#include <boost/beast/core/error.hpp>
+#include <boost/beast/core/async_base.hpp>
+#include <boost/beast/core/detail/is_invocable.hpp>
 #include "error.hpp"
-
+#include <boost/config.hpp> // for BOOST_FALLTHROUGH
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/buffer.hpp>
-#include <boost/config.hpp> // for BOOST_FALLTHROUGH
-
-#include <boost/beast/core/error.hpp>
-#include <boost/beast/core/async_base.hpp>
-#include <boost/beast/core/detail/is_invocable.hpp>
-
 #include <iostream>
 #include <string>
 #include <memory>
 #include <utility>
 #include <type_traits>
 
-namespace net = boost::asio;
-namespace beast = boost::beast;
-
 namespace socks {
+
+namespace beast = boost::beast;
+namespace net = beast::net;
 
 using net::ip::tcp;
 using beast::error_code;

@@ -10,6 +10,8 @@
 #ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_ERROR_HPP
 #define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_ERROR_HPP
 
+#include <boost/beast/core/detail/config.hpp>
+#include <boost/beast/core/error.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
 
