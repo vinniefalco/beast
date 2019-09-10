@@ -7,7 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#pragma once
+#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_ERROR_HPP
+#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_ERROR_HPP
 
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
@@ -169,3 +170,5 @@ struct is_error_code_enum<socks::errc::errc_t>
 };
 } // namespace system
 } // namespace boost
+
+#endif

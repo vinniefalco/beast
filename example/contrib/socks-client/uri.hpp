@@ -7,7 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#pragma once
+#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
+#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
 
 #include <string>
 #include <stdexcept>
@@ -1020,3 +1021,4 @@ private:
 
 } // socks
 
+#endif

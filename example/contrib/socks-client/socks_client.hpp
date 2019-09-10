@@ -7,7 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#pragma once
+#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_SOCKS_CLIENT_HPP
+#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_SOCKS_CLIENT_HPP
 
 #include "error.hpp"
 
@@ -584,3 +585,5 @@ async_handshake(
 }
 
 } // socks
+
+#endif
