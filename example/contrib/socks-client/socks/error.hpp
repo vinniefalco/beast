@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_ERROR_HPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_ERROR_HPP
+#ifndef SOCKS_ERROR_HPP
+#define SOCKS_ERROR_HPP
 
 #include <socks/config.hpp>
 #include <boost/beast/core/error.hpp>

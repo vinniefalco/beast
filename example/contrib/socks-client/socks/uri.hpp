@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
+#ifndef SOCKS_URI_HPP
+#define SOCKS_URI_HPP
 
 #include <socks/config.hpp>
 #include <socks/query.hpp>

@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_IMPL_ERROR_IPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_IMPL_ERROR_IPP
+#ifndef SOCKS_IMPL_ERROR_IPP
+#define SOCKS_IMPL_ERROR_IPP
 
 #include <socks/error.hpp>
 

@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_IMPL_URI_IPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_IMPL_URI_IPP
+#ifndef SOCKS_IMPL_URI_IPP
+#define SOCKS_IMPL_URI_IPP
 
 #include <socks/detail/char_type.hpp>
 #include <string>

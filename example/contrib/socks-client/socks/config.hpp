@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CONFIG_HPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CONFIG_HPP
+#ifndef SOCKS_CONFIG_HPP
+#define SOCKS_CONFIG_HPP
 
 #include <boost/beast/core/string.hpp>
 

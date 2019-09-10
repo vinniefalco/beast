@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_IMPL_QUERY_IPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_IMPL_QUERY_IPP
+#ifndef SOCKS_IMPL_QUERY_IPP
+#define SOCKS_IMPL_QUERY_IPP
 
 #include <boost/assert.hpp>
 #include <string>

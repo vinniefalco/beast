@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_DETAIL_CHAR_TRAITS_HPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_DETAIL_CHAR_TRAITS_HPP
+#ifndef SOCKS_DETAIL_CHAR_TYPE_HPP
+#define SOCKS_DETAIL_CHAR_TYPE_HPP
 
 #include <socks/config.hpp>
 #include <string>
