@@ -233,4 +233,19 @@ in the Beast example contains improvements to the original program.
 
 [/-----------------------------------------------------------------------------]
 
+[section Contributions]
+
+These contributions were submitted by other authors and provided as-is.
+
+[table
+[[Description] [Sources]]
+[
+        [SOCKS Proxy client library and example program]
+        [[path_link example/contrib/socks-client socks-client]]
+]]
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
 [endsect]
