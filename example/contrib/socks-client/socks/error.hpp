@@ -7,13 +7,11 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_ERROR_HPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_ERROR_HPP
+#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_ERROR_HPP
+#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_ERROR_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <socks/config.hpp>
 #include <boost/beast/core/error.hpp>
-#include <boost/system/system_error.hpp>
-#include <boost/system/error_code.hpp>
 
 namespace socks {
 
@@ -84,7 +82,7 @@ enum class error
 
 } // socks
 
-#include "./impl/error.hpp"
-#include "./impl/error.ipp"
+#include <socks/impl/error.hpp>
+#include <socks/impl/error.ipp>
 
 #endif

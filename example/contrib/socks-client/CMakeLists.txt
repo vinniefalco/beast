@@ -11,15 +11,18 @@
 GroupSources(include/boost/beast beast)
 GroupSources(example/contrib/socks-client "/")
 
+file (GLOB_RECURSE SOCKS_FILES
+    socks/*.hpp
+    socks/*.ipp
+)
+
+include_directories (.)
+
 add_executable (socks-client-coro
     ${BOOST_BEAST_FILES}
-    impl/error.hpp
-    impl/error.ipp
+    ${SOCKS_FILES}
     Jamfile
     socks_client_coro.cpp
-    error.hpp
-    socks_client.hpp
-    uri.hpp
 )
 
 target_link_libraries(socks-client-coro

@@ -7,10 +7,10 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_IMPL_ERROR_IPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_IMPL_ERROR_IPP
+#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_IMPL_ERROR_IPP
+#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_IMPL_ERROR_IPP
 
-#include "../error.hpp"
+#include <socks/error.hpp>
 
 namespace socks {
 

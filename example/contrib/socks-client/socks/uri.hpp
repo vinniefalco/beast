@@ -10,15 +10,12 @@
 #ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
 #define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_URI_HPP
 
-#include <boost/beast/core/detail/config.hpp>
-#include <boost/beast/core/string.hpp>
+#include <socks/config.hpp>
 #include <string>
 #include <stdexcept>
 #include <iterator>
 
 namespace socks {
-
-using boost::beast::string_view;
 
 namespace detail {
 

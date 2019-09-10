@@ -7,13 +7,11 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_SOCKS_CLIENT_HPP
-#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_SOCKS_CLIENT_HPP
+#ifndef BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_HPP
+#define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_HPP
 
-#include <boost/beast/core/detail/config.hpp>
-
-#include "error.hpp"
-
+#include <socks/config.hpp>
+#include <socks/error.hpp>
 #include <boost/beast/core/async_base.hpp>
 #include <boost/beast/core/detail/is_invocable.hpp>
 #include <boost/config.hpp> // for BOOST_FALLTHROUGH

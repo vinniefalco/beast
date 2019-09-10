@@ -8,9 +8,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#include "socks_client.hpp"
-#include "uri.hpp"
-
+#include <socks/client.hpp>
+#include <socks/uri.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>

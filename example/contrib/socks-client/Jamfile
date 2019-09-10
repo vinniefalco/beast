@@ -11,6 +11,7 @@
 exe socks-client-coro :
     socks_client_coro.cpp
     :
+    <include>.
     <variant>coverage:<build>no
     <variant>ubasan:<build>no
     <library>/boost/coroutine//boost_coroutine
