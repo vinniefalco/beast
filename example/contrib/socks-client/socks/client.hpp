@@ -12,6 +12,7 @@
 
 #include <socks/config.hpp>
 #include <socks/error.hpp>
+#include <socks/detail/protocol.hpp>
 #include <boost/beast/core/async_base.hpp>
 #include <boost/beast/core/detail/is_invocable.hpp>
 #include <boost/config.hpp> // for BOOST_FALLTHROUGH
@@ -53,54 +54,6 @@ void write(type v, target& p)
 
 } // detail
 
-enum
-{
-    SOCKS_VERSION_4 = 4,
-    SOCKS_VERSION_5 = 5
-};
-
-enum
-{
-    SOCKS5_AUTH_NONE = 0x00,
-    SOCKS5_AUTH = 0x02,
-    SOCKS5_AUTH_UNACCEPTABLE = 0xFF
-};
-
-enum
-{
-    SOCKS_CMD_CONNECT = 0x01,
-    SOCKS_CMD_BIND = 0x02,
-    SOCKS5_CMD_UDP = 0x03
-};
-
-enum
-{
-    SOCKS5_ATYP_IPV4 = 0x01,
-    SOCKS5_ATYP_DOMAINNAME = 0x03,
-    SOCKS5_ATYP_IPV6 = 0x04
-};
-
-enum
-{
-    SOCKS5_SUCCEEDED = 0x00,
-    SOCKS5_GENERAL_SOCKS_SERVER_FAILURE,
-    SOCKS5_CONNECTION_NOT_ALLOWED_BY_RULESET,
-    SOCKS5_NETWORK_UNREACHABLE,
-    SOCKS5_CONNECTION_REFUSED,
-    SOCKS5_TTL_EXPIRED,
-    SOCKS5_COMMAND_NOT_SUPPORTED,
-    SOCKS5_ADDRESS_TYPE_NOT_SUPPORTED,
-    SOCKS5_UNASSIGNED
-};
-
-enum
-{
-    SOCKS4_REQUEST_GRANTED = 90,
-    SOCKS4_REQUEST_REJECTED_OR_FAILED,
-    SOCKS4_CANNOT_CONNECT_TARGET_SERVER,
-    SOCKS4_REQUEST_REJECTED_USER_NO_ALLOW,
-};
-
 template<
     class AsyncStream,
     class Handler,
@@ -125,8 +78,13 @@ public:
         (*this)({}, 0); // start the operation
     }
 
-    void operator()(error_code ec, std::size_t /*bytes_transferred*/)
+    void
+    operator()(
+        error_code ec,
+        std::size_t bytes_transferred)
     {
+        boost::ignore_unused(bytes_transferred);
+
         using detail::write;
         using detail::read;
 
@@ -142,8 +100,8 @@ public:
             std::size_t bytes_to_write = 9 + username_.size();
             auto req = static_cast<char*>(request.prepare(bytes_to_write).data());
 
-            write<uint8_t>(SOCKS_VERSION_4, req); // SOCKS VERSION 4.
-            write<uint8_t>(SOCKS_CMD_CONNECT, req); // CONNECT.
+            write<uint8_t>(detail::SOCKS_VERSION_4, req); // SOCKS VERSION 4.
+            write<uint8_t>(detail::SOCKS_CMD_CONNECT, req); // CONNECT.
 
             write<uint16_t>(port_, req); // DST PORT.
 
@@ -176,17 +134,17 @@ public:
             read<uint8_t>(resp); // VN is the version of the reply code and should be 0.
             auto cd = read<uint8_t>(resp);
 
-            if (cd != SOCKS4_REQUEST_GRANTED)
+            if (cd != detail::SOCKS4_REQUEST_GRANTED)
             {
                 switch (cd)
                 {
-                case SOCKS4_REQUEST_REJECTED_OR_FAILED:
+                case detail::SOCKS4_REQUEST_REJECTED_OR_FAILED:
                     ec = error::socks_request_rejected_or_failed;
                     break;
-                case SOCKS4_CANNOT_CONNECT_TARGET_SERVER:
+                case detail::SOCKS4_CANNOT_CONNECT_TARGET_SERVER:
                     ec = error::socks_request_rejected_cannot_connect;
                     break;
-                case SOCKS4_REQUEST_REJECTED_USER_NO_ALLOW:
+                case detail::SOCKS4_REQUEST_REJECTED_USER_NO_ALLOW:
                     ec = error::socks_request_rejected_incorrect_userid;
                     break;
                 default:
@@ -254,27 +212,34 @@ public:
             std::size_t bytes_to_write = username_.empty() ? 3 : 4;
             auto req = static_cast<char*>(request.prepare(bytes_to_write).data());
 
-            write<uint8_t>(SOCKS_VERSION_5, req); // SOCKS VERSION 5.
+            write<uint8_t>(detail::SOCKS_VERSION_5, req); // SOCKS VERSION 5.
             if (username_.empty())
             {
                 write<uint8_t>(1, req); // 1 method
-                write<uint8_t>(SOCKS5_AUTH_NONE, req); // support no authentication
+                write<uint8_t>(detail::SOCKS5_AUTH_NONE, req); // support no authentication
             }
             else
             {
                 write<uint8_t>(2, req); // 2 methods
-                write<uint8_t>(SOCKS5_AUTH_NONE, req); // support no authentication
-                write<uint8_t>(SOCKS5_AUTH, req); // support username/password
+                write<uint8_t>(detail::SOCKS5_AUTH_NONE, req); // support no authentication
+                write<uint8_t>(detail::SOCKS5_AUTH, req); // support username/password
             }
 
             request.commit(bytes_to_write);
-            return boost::asio::async_write(stream_, request, std::move(*this));
+            return net::async_write(
+                stream_,
+                request,
+                std::move(*this));
         }
         case 1:
         {
             step_ = 2;
 
-            return boost::asio::async_read(stream_, response, boost::asio::transfer_exactly(2), std::move(*this));
+            return net::async_read(
+                stream_,
+                response,
+                net::transfer_exactly(2),
+                std::move(*this));
         }
         case 2:
         {
@@ -285,13 +250,13 @@ public:
             auto version = read<uint8_t>(resp);
             auto method = read<uint8_t>(resp);
 
-            if (version != SOCKS_VERSION_5)
+            if (version != detail::SOCKS_VERSION_5)
             {
                 ec = socks::error::socks_unsupported_version;
                 break;
             }
 
-            if (method == SOCKS5_AUTH) // need username&password auth...
+            if (method == detail::SOCKS5_AUTH) // need username&password auth...
             {
                 if (username_.empty())
                 {
@@ -314,10 +279,13 @@ public:
                 request.commit(bytes_to_write);
 
                 // write username & password.
-                return boost::asio::async_write(stream_, request, std::move(*this));
+                return net::async_write(
+                    stream_,
+                    request,
+                    std::move(*this));
             }
 
-            if (method == SOCKS5_AUTH_NONE) // no need auth...
+            if (method == detail::SOCKS5_AUTH_NONE) // no need auth...
             {
                 step_ = 5;
                 return (*this)(ec, 0);
@@ -330,8 +298,11 @@ public:
         {
             step_ = 4;
             response.consume(response.size());
-            return boost::asio::async_read(stream_, response,
-                boost::asio::transfer_exactly(2), std::move(*this));
+            return net::async_read(
+                stream_,
+                response,
+                net::transfer_exactly(2),
+                std::move(*this));
         }
         case 4:
         {
@@ -363,13 +334,13 @@ public:
             auto req = static_cast<char*>(
                 request.prepare(std::max<std::size_t>(bytes_to_write, 22)).data());
 
-            write<uint8_t>(SOCKS_VERSION_5, req); // SOCKS VERSION 5.
-            write<uint8_t>(SOCKS_CMD_CONNECT, req); // CONNECT command.
+            write<uint8_t>(detail::SOCKS_VERSION_5, req); // SOCKS VERSION 5.
+            write<uint8_t>(detail::SOCKS_CMD_CONNECT, req); // CONNECT command.
             write<uint8_t>(0, req); // reserved.
 
             if (use_hostname_)
             {
-                write<uint8_t>(SOCKS5_ATYP_DOMAINNAME, req); // atyp, domain name.
+                write<uint8_t>(detail::SOCKS5_ATYP_DOMAINNAME, req); // atyp, domain name.
                 BOOST_ASSERT(hostname_.size() <= 255);
                 write<uint8_t>(static_cast<int8_t>(hostname_.size()), req);    // domainname size.
                 std::copy(hostname_.begin(), hostname_.end(), req);    // domainname.
@@ -378,20 +349,20 @@ public:
             }
             else
             {
-                auto endp = boost::asio::ip::make_address(hostname_, ec);
+                auto endp = net::ip::make_address(hostname_, ec);
                 if (ec)
                     break;
 
                 if (endp.is_v4())
                 {
-                    write<uint8_t>(SOCKS5_ATYP_IPV4, req); // ipv4.
+                    write<uint8_t>(detail::SOCKS5_ATYP_IPV4, req); // ipv4.
                     write<uint32_t>(endp.to_v4().to_uint(), req);
                     write<uint16_t>(port_, req);
                     bytes_to_write = 10;
                 }
                 else
                 {
-                    write<uint8_t>(SOCKS5_ATYP_IPV6, req); // ipv6.
+                    write<uint8_t>(detail::SOCKS5_ATYP_IPV6, req); // ipv6.
                     auto bytes = endp.to_v6().to_bytes();
                     std::copy(bytes.begin(), bytes.end(), req);
                     req += 16;
@@ -401,7 +372,10 @@ public:
             }
 
             request.commit(bytes_to_write);
-            return boost::asio::async_write(stream_, request, std::move(*this));
+            return net::async_write(
+                stream_,
+                request,
+                std::move(*this));
         }
         case 6:
         {
@@ -409,8 +383,11 @@ public:
 
             std::size_t bytes_to_read = 10;
             response.consume(response.size());
-            return boost::asio::async_read(stream_, response,
-                boost::asio::transfer_exactly(bytes_to_read), std::move(*this));
+            return net::async_read(
+                stream_,
+                response,
+                net::transfer_exactly(bytes_to_read),
+                std::move(*this));
         }
         case 7:
         {
@@ -422,33 +399,37 @@ public:
             read<uint8_t>(resp);    // skip RSV.
             int atyp = read<uint8_t>(resp);
 
-            if (ver != SOCKS_VERSION_5)
+            if (ver != detail::SOCKS_VERSION_5)
             {
                 ec = error::socks_unsupported_version;
                 break;
             }
 
-            if (atyp != SOCKS5_ATYP_IPV4 &&
-                atyp != SOCKS5_ATYP_DOMAINNAME &&
-                atyp != SOCKS5_ATYP_IPV6)
+            if (atyp != detail::SOCKS5_ATYP_IPV4 &&
+                atyp != detail::SOCKS5_ATYP_DOMAINNAME &&
+                atyp != detail::SOCKS5_ATYP_IPV6)
             {
                 ec = error::socks_general_failure;
                 break;
             }
 
-            if (atyp == SOCKS5_ATYP_DOMAINNAME)
+            if (atyp == detail::SOCKS5_ATYP_DOMAINNAME)
             {
                 auto domain_length = read<uint8_t>(resp);
 
-                return boost::asio::async_read(stream_, response,
-                    boost::asio::transfer_exactly(domain_length - 3), std::move(*this));
+                return net::async_read(
+                    stream_,
+                    response,
+                    net::transfer_exactly(domain_length - 3),
+                    std::move(*this));
             }
 
-            if (atyp == SOCKS5_ATYP_IPV6)
-            {
-                return boost::asio::async_read(stream_, response,
-                    boost::asio::transfer_exactly(12), std::move(*this));
-            }
+            if (atyp == detail::SOCKS5_ATYP_IPV6)
+                return net::async_read(
+                    stream_,
+                    response,
+                    net::transfer_exactly(12),
+                    std::move(*this));
             BOOST_FALLTHROUGH;
         }
         case 8:
@@ -459,7 +440,7 @@ public:
             read<uint8_t>(resp);    // skip RSV.
             int atyp = read<uint8_t>(resp);
 
-            if (atyp == SOCKS5_ATYP_DOMAINNAME)
+            if (atyp == detail::SOCKS5_ATYP_DOMAINNAME)
             {
                 auto domain_length = read<uint8_t>(resp);
 
@@ -471,24 +452,24 @@ public:
                 std::cout << "* SOCKS remote host: " << domain << ":" << port << std::endl;
             }
 
-            if (atyp == SOCKS5_ATYP_IPV4)
+            if (atyp == detail::SOCKS5_ATYP_IPV4)
             {
                 tcp::endpoint remote_endp(
-                    boost::asio::ip::address_v4(read<uint32_t>(resp)),
+                    net::ip::address_v4(read<uint32_t>(resp)),
                     read<uint16_t>(resp));
 
                 std::cout << "* SOCKS remote host: " << remote_endp.address().to_string()
                     << ":" << remote_endp.port() << std::endl;
             }
 
-            if (atyp == SOCKS5_ATYP_IPV6)
+            if (atyp == detail::SOCKS5_ATYP_IPV6)
             {
-                boost::asio::ip::address_v6::bytes_type bytes;
+                net::ip::address_v6::bytes_type bytes;
                 for (auto i = 0; i < 16; i++)
                     bytes[i] = read<uint8_t>(resp);
 
                 tcp::endpoint remote_endp(
-                    boost::asio::ip::address_v6(bytes),
+                    net::ip::address_v6(bytes),
                     read<uint16_t>(resp));
 
                 std::cout << "* SOCKS remote host: " << remote_endp.address().to_string()
@@ -500,19 +481,19 @@ public:
             {
                 switch (rep)
                 {
-                case SOCKS5_GENERAL_SOCKS_SERVER_FAILURE:
+                case detail::SOCKS5_GENERAL_SOCKS_SERVER_FAILURE:
                     ec = error::socks_general_failure; break;
-                case SOCKS5_CONNECTION_NOT_ALLOWED_BY_RULESET:
+                case detail::SOCKS5_CONNECTION_NOT_ALLOWED_BY_RULESET:
                     ec = error::socks_connection_not_allowed_by_ruleset; break;
-                case SOCKS5_NETWORK_UNREACHABLE:
+                case detail::SOCKS5_NETWORK_UNREACHABLE:
                     ec = error::socks_network_unreachable; break;
-                case SOCKS5_CONNECTION_REFUSED:
+                case detail::SOCKS5_CONNECTION_REFUSED:
                     ec = error::socks_connection_refused; break;
-                case SOCKS5_TTL_EXPIRED:
+                case detail::SOCKS5_TTL_EXPIRED:
                     ec = error::socks_ttl_expired; break;
-                case SOCKS5_COMMAND_NOT_SUPPORTED:
+                case detail::SOCKS5_COMMAND_NOT_SUPPORTED:
                     ec = error::socks_command_not_supported; break;
-                case SOCKS5_ADDRESS_TYPE_NOT_SUPPORTED:
+                case detail::SOCKS5_ADDRESS_TYPE_NOT_SUPPORTED:
                     ec = error::socks_address_type_not_supported; break;
                 default:
                     ec = error::socks_unassigned; break;
