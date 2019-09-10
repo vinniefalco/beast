@@ -11,10 +11,11 @@
 #define BOOST_BEAST_EXAMPLE_CONTRIB_SOCKS_CLIENT_SOCKS_CLIENT_HPP
 
 #include <boost/beast/core/detail/config.hpp>
-#include <boost/beast/core/error.hpp>
+
+#include "error.hpp"
+
 #include <boost/beast/core/async_base.hpp>
 #include <boost/beast/core/detail/is_invocable.hpp>
-#include "error.hpp"
 #include <boost/config.hpp> // for BOOST_FALLTHROUGH
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/streambuf.hpp>
@@ -33,7 +34,6 @@ namespace beast = boost::beast;
 namespace net = beast::net;
 
 using net::ip::tcp;
-using beast::error_code;
 
 namespace detail {
 
@@ -183,16 +183,16 @@ public:
                 switch (cd)
                 {
                 case SOCKS4_REQUEST_REJECTED_OR_FAILED:
-                    ec = errc::socks_request_rejected_or_failed;
+                    ec = error::socks_request_rejected_or_failed;
                     break;
                 case SOCKS4_CANNOT_CONNECT_TARGET_SERVER:
-                    ec = errc::socks_request_rejected_cannot_connect;
+                    ec = error::socks_request_rejected_cannot_connect;
                     break;
                 case SOCKS4_REQUEST_REJECTED_USER_NO_ALLOW:
-                    ec = errc::socks_request_rejected_incorrect_userid;
+                    ec = error::socks_request_rejected_incorrect_userid;
                     break;
                 default:
-                    ec = errc::socks_unknown_error;
+                    ec = error::socks_unknown_error;
                     break;
                 }
             }
@@ -289,7 +289,7 @@ public:
 
             if (version != SOCKS_VERSION_5)
             {
-                ec = socks::errc::socks_unsupported_version;
+                ec = socks::error::socks_unsupported_version;
                 break;
             }
 
@@ -297,7 +297,7 @@ public:
             {
                 if (username_.empty())
                 {
-                    ec = socks::errc::socks_username_required;
+                    ec = socks::error::socks_username_required;
                     break;
                 }
 
@@ -325,7 +325,7 @@ public:
                 return (*this)(ec, 0);
             }
 
-            ec = socks::errc::socks_unsupported_authentication_version;
+            ec = socks::error::socks_unsupported_authentication_version;
             break;
         }
         case 3:
@@ -345,13 +345,13 @@ public:
 
             if (version != 0x01) // auth version.
             {
-                ec = errc::socks_unsupported_authentication_version;
+                ec = error::socks_unsupported_authentication_version;
                 break;
             }
 
             if (status != 0x00)
             {
-                ec = errc::socks_authentication_error;
+                ec = error::socks_authentication_error;
                 break;
             }
             BOOST_FALLTHROUGH;
@@ -426,7 +426,7 @@ public:
 
             if (ver != SOCKS_VERSION_5)
             {
-                ec = errc::socks_unsupported_version;
+                ec = error::socks_unsupported_version;
                 break;
             }
 
@@ -434,7 +434,7 @@ public:
                 atyp != SOCKS5_ATYP_DOMAINNAME &&
                 atyp != SOCKS5_ATYP_IPV6)
             {
-                ec = errc::socks_general_failure;
+                ec = error::socks_general_failure;
                 break;
             }
 
@@ -503,21 +503,21 @@ public:
                 switch (rep)
                 {
                 case SOCKS5_GENERAL_SOCKS_SERVER_FAILURE:
-                    ec = errc::socks_general_failure; break;
+                    ec = error::socks_general_failure; break;
                 case SOCKS5_CONNECTION_NOT_ALLOWED_BY_RULESET:
-                    ec = errc::socks_connection_not_allowed_by_ruleset; break;
+                    ec = error::socks_connection_not_allowed_by_ruleset; break;
                 case SOCKS5_NETWORK_UNREACHABLE:
-                    ec = errc::socks_network_unreachable; break;
+                    ec = error::socks_network_unreachable; break;
                 case SOCKS5_CONNECTION_REFUSED:
-                    ec = errc::socks_connection_refused; break;
+                    ec = error::socks_connection_refused; break;
                 case SOCKS5_TTL_EXPIRED:
-                    ec = errc::socks_ttl_expired; break;
+                    ec = error::socks_ttl_expired; break;
                 case SOCKS5_COMMAND_NOT_SUPPORTED:
-                    ec = errc::socks_command_not_supported; break;
+                    ec = error::socks_command_not_supported; break;
                 case SOCKS5_ADDRESS_TYPE_NOT_SUPPORTED:
-                    ec = errc::socks_address_type_not_supported; break;
+                    ec = error::socks_address_type_not_supported; break;
                 default:
-                    ec = errc::socks_unassigned; break;
+                    ec = error::socks_unassigned; break;
                 }
 
                 break;

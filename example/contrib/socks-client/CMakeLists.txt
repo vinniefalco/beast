@@ -13,6 +13,8 @@ GroupSources(example/contrib/socks-client "/")
 
 add_executable (socks-client-coro
     ${BOOST_BEAST_FILES}
+    impl/error.hpp
+    impl/error.ipp
     Jamfile
     socks_client_coro.cpp
     error.hpp
