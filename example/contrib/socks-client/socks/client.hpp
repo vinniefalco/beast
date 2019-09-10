@@ -545,22 +545,21 @@ private:
     int step_ = 0;
 };
 
-
-template<typename AsyncStream, typename Handler>
+/** Perform the SOCKS v4 handshake in the client role.
+*/
+template<
+    typename AsyncStream,
+    typename Handler
+>
 typename net::async_result<
     Handler, void(error_code)>::return_type
-async_handshake(
+async_handshake_v4(
     AsyncStream& stream,
     const std::string& hostname,
     unsigned short port,
-    int version,
     std::string const& username,
-    std::string const& password,
-    bool use_hostname,
     Handler&& handler)
 {
-    BOOST_ASSERT("incorrect socks version" && (version == SOCKS_VERSION_5 || version == SOCKS_VERSION_4));
-
     net::async_completion<Handler, void(error_code)> init{ handler };
     using HandlerType = typename std::decay<decltype(init.completion_handler)>::type;
 
@@ -570,12 +569,39 @@ async_handshake(
     using Buffer = net::basic_streambuf<typename std::allocator_traits<
         net::associated_allocator_t<HandlerType>>:: template rebind_alloc<char> >;
 
-    if (version == SOCKS_VERSION_4)
-        socks4_op<AsyncStream, HandlerType, Buffer>(stream, init.completion_handler,
-            hostname, port, username);
-    else
-        socks5_op<AsyncStream, HandlerType, Buffer>(stream, init.completion_handler,
-            hostname, port, username, password, use_hostname);
+    socks4_op<AsyncStream, HandlerType, Buffer>(stream, init.completion_handler,
+        hostname, port, username);
+
+    return init.result.get();
+}
+
+/** Perform the SOCKS v5 handshake in the client role.
+*/
+template<
+    typename AsyncStream,
+    typename Handler>
+typename net::async_result<
+    Handler, void(error_code)>::return_type
+async_handshake_v5(
+    AsyncStream& stream,
+    const std::string& hostname,
+    unsigned short port,
+    std::string const& username,
+    std::string const& password,
+    bool use_hostname,
+    Handler&& handler)
+{
+    net::async_completion<Handler, void(error_code)> init{ handler };
+    using HandlerType = typename std::decay<decltype(init.completion_handler)>::type;
+
+    static_assert(beast::detail::is_invocable<HandlerType,
+        void(error_code)>::value, "Handler type requirements not met");
+
+    using Buffer = net::basic_streambuf<typename std::allocator_traits<
+        net::associated_allocator_t<HandlerType>>:: template rebind_alloc<char> >;
+
+    socks5_op<AsyncStream, HandlerType, Buffer>(stream, init.completion_handler,
+        hostname, port, username, password, use_hostname);
 
     return init.result.get();
 }

@@ -8,6 +8,12 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
+//------------------------------------------------------------------------------
+//
+// Example: SOCKS proxy client, asynchronous stackful coroutines
+//
+//------------------------------------------------------------------------------
+
 #include <socks/client.hpp>
 #include <socks/uri.hpp>
 #include <boost/beast/core.hpp>
@@ -21,14 +27,16 @@
 #include <iostream>
 #include <string>
 
+namespace beast = boost::beast;         // from <boost/beast.hpp>
+namespace http = beast::http;           // from <boost/beast/http.hpp>
+namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
-namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
 //------------------------------------------------------------------------------
 
 // Report a failure
 void
-fail(boost::system::error_code ec, char const* what)
+fail(beast::error_code ec, char const* what)
 {
     std::cerr << what << ": " << ec.message() << "\n";
 }
@@ -41,10 +49,10 @@ do_session(
     std::string const& target,
     int version,
     std::string const& socks_server,
-    boost::asio::io_context& ioc,
+    net::io_context& ioc,
     boost::asio::yield_context yield)
 {
-    boost::system::error_code ec;
+    beast::error_code ec;
 
     // These objects perform our I/O
     tcp::resolver resolver{ioc};
@@ -67,18 +75,35 @@ do_session(
     }
 
     // Look up the domain name
-    auto const results = resolver.async_resolve(std::string(socks_url.host()),
-        std::string(socks_url.port()), yield[ec]);
+    auto const results = resolver.async_resolve(
+        std::string(socks_url.host()),
+        std::string(socks_url.port()),
+        yield[ec]);
     if (ec)
         return fail(ec, "resolve");
 
     // Make the connection on the IP address we get from a lookup
-    boost::asio::async_connect(socket, results.begin(), results.end(), yield[ec]);
+    net::async_connect(socket, results, yield[ec]);
     if (ec)
         return fail(ec, "connect");
 
-     socks::async_handshake(socket, host, static_cast<unsigned short>(std::atoi(port.c_str())),
-         socks_version, std::string(socks_url.username()), std::string(socks_url.password()), true, yield[ec]);
+    if(socks_version == 4)
+        socks::async_handshake_v4(
+            socket,
+            host,
+            static_cast<unsigned short>(std::atoi(port.c_str())),
+            std::string(socks_url.username()),
+            yield[ec]);
+    else
+        socks::async_handshake_v5(
+            socket,
+            host,
+            static_cast<unsigned short>(std::atoi(port.c_str())),
+            std::string(socks_url.username()),
+            std::string(socks_url.password()),
+            true,
+            yield[ec]);
+
     if (ec)
         return fail(ec, "socks async_handshake");
 
@@ -93,7 +118,7 @@ do_session(
         return fail(ec, "write");
 
     // This buffer is used for reading and must be persisted
-    boost::beast::flat_buffer b;
+    beast::flat_buffer b;
 
     // Declare a container to hold the response
     http::response<http::dynamic_body> res;
@@ -112,7 +137,7 @@ do_session(
     // not_connected happens sometimes
     // so don't bother reporting it.
     //
-    if(ec && ec != boost::system::errc::not_connected)
+    if(ec && ec != beast::errc::not_connected)
         return fail(ec, "shutdown");
 
     // If we get here then the connection is closed gracefully
@@ -138,7 +163,7 @@ int main(int argc, char** argv)
     auto const socks_server = argv[4];
 
     // The io_context is required for all I/O
-    boost::asio::io_context ioc;
+    net::io_context ioc;
 
     // Launch the asynchronous operation
     boost::asio::spawn(ioc, std::bind(

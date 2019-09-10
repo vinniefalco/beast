@@ -11,9 +11,6 @@
 #define SOCKS_IMPL_QUERY_IPP
 
 #include <boost/assert.hpp>
-#include <string>
-#include <stdexcept>
-#include <iterator>
 
 namespace socks {
 

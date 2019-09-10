@@ -12,7 +12,6 @@
 
 #include <socks/config.hpp>
 #include <iterator>
-#include <stdexcept>
 #include <utility>
 
 namespace socks {
