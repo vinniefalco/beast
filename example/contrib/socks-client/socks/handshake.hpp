@@ -23,8 +23,7 @@ template<
     typename AsyncStream,
     typename Handler
 >
-typename net::async_result<
-    Handler, void(error_code)>::return_type
+BOOST_BEAST_ASYNC_RESULT1(Handler)
 async_handshake_v4(
     AsyncStream& stream,
     const std::string& hostname,
@@ -37,8 +36,7 @@ async_handshake_v4(
 template<
     typename AsyncStream,
     typename Handler>
-typename net::async_result<
-    Handler, void(error_code)>::return_type
+BOOST_BEAST_ASYNC_RESULT1(Handler)
 async_handshake_v5(
     AsyncStream& stream,
     const std::string& hostname,
