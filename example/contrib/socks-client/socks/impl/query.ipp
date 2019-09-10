@@ -18,14 +18,16 @@
 namespace socks {
 
 void
-qs_iterator::
-qs_parse() noexcept
+query::
+const_iterator::
+parse() noexcept
 {
-    auto b = qs_.data();
-    auto e = qs_.data() + qs_.size();
+    auto b = s_.data();
+    auto e = s_.data() + s_.size();
     auto start = b;
 
-    enum {
+    enum
+    {
         qs_start,
         qs_key,
         qs_value,
@@ -87,7 +89,8 @@ qs_parse() noexcept
 }
 
 void
-qs_iterator::
+query::
+const_iterator::
 increment()
 {
     auto start_ptr = value_.second.data();
@@ -99,13 +102,13 @@ increment()
         return;
 
     auto next_part = start_ptr + offset + 1;
-    auto end = qs_.data() + qs_.size();
+    auto end = s_.data() + s_.size();
 
     if (end <= next_part)
         return;
 
-    qs_ = string_view(next_part, end - next_part);
-    qs_parse();
+    s_ = string_view(next_part, end - next_part);
+    parse();
 }
 
 } // socks

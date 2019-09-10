@@ -20,6 +20,15 @@ namespace socks {
 
 class uri
 {
+    string_view scheme_;
+    string_view username_;
+    string_view password_;
+    string_view host_;
+    string_view port_;
+    string_view path_;
+    string_view query_string_;
+    string_view fragment_;
+
 public:
     uri() = default;
     ~uri() = default;
@@ -72,9 +81,15 @@ public:
     }
 
     string_view
+    query_string() noexcept
+    {
+        return query_string_;
+    }
+
+    socks::query
     query() noexcept
     {
-        return query_;
+        return socks::query{query_string_};
     }
 
     string_view
@@ -107,56 +122,10 @@ public:
     std::string
     decodeURIComponent(string_view str);
 
-    qs_iterator
-    qs_begin() const noexcept
-    {
-        return qs_iterator(query_);
-    }
-
-    qs_iterator
-    qs_end() const noexcept
-    {
-        return qs_iterator();
-    }
-
-    struct qs_range
-    {
-        qs_iterator
-        begin() const noexcept
-        {
-            return begin_;
-        }
-
-        qs_iterator
-        end() const noexcept
-        {
-            return end_;
-        }
-
-        qs_iterator begin_;
-        qs_iterator end_;
-    };
-
-    qs_range
-    qs()
-    {
-        return {qs_begin(), qs_end()};
-    }
-
 private:
     BOOST_BEAST_DECL
     string_view
     known_port() noexcept;
-
-private:
-    string_view scheme_;
-    string_view username_;
-    string_view password_;
-    string_view host_;
-    string_view port_;
-    string_view path_;
-    string_view query_;
-    string_view fragment_;
 };
 
 } // socks

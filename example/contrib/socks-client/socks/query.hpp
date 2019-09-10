@@ -17,93 +17,122 @@
 
 namespace socks {
 
-class qs_iterator
+/** A ForwardRange representing a reference to a parsed query string.
+*/
+class query
 {
 public:
-    using value_type = std::pair<string_view, string_view>;
-    using difference_type = std::ptrdiff_t;
-    using reference = value_type&;
-    using pointer = const value_type*;
-    using iterator_category = std::forward_iterator_tag;
-
-    qs_iterator() = default;
-
     explicit
-    qs_iterator(const string_view& s) : qs_(s)
+    query(string_view s)
+        : s_(s)
     {
-        qs_parse();
     }
 
-    ~qs_iterator() = default;
-
-    reference
-    operator*() const noexcept
+    class const_iterator
     {
-        return const_cast<reference>(value_);
-    }
+    public:
+        using value_type = std::pair<string_view, string_view>;
+        using difference_type = std::ptrdiff_t;
+        using reference = value_type&;
+        using pointer = const value_type*;
+        using iterator_category = std::forward_iterator_tag;
 
-    pointer
-    operator->() const noexcept
-    {
-        return &value_;
-    }
+        const_iterator() = default;
 
-    qs_iterator&
-    operator++() noexcept
-    {
+        explicit
+        const_iterator(string_view s)
+            : s_(s)
+        {
+            parse();
+        }
+
+        ~const_iterator() = default;
+
+        reference
+        operator*() const noexcept
+        {
+            return const_cast<reference>(value_);
+        }
+
+        pointer
+        operator->() const noexcept
+        {
+            return &value_;
+        }
+
+        const_iterator&
+        operator++() noexcept
+        {
+            increment();
+            return *this;
+        }
+
+        const_iterator
+        operator++(int) noexcept
+        {
+            const_iterator tmp = *this;
+            increment();
+            return tmp;
+        }
+
+        bool
+        operator==(const const_iterator &other) const noexcept
+        {
+            if ((value_.first.data() == other.value_.first.data() &&
+                value_.first.size() == other.value_.first.size()) &&
+                (value_.second.data() == other.value_.second.data() &&
+                value_.second.size() == other.value_.second.size()))
+                return true;
+            return false;
+        }
+
+        bool
+        operator!=(const const_iterator &other) const noexcept
+        {
+            return !(*this == other);
+        }
+
+        string_view
+        key() const noexcept
+        {
+            return value_.first;
+        }
+
+        string_view
+        value() const noexcept
+        {
+            return value_.second;
+        }
+
+    private:
+        BOOST_BEAST_DECL
+        void
+        parse() noexcept;
+
+        BOOST_BEAST_DECL
+        void
         increment();
-        return *this;
-    }
 
-    qs_iterator
-    operator++(int) noexcept
-    {
-        qs_iterator tmp = *this;
-        increment();
-        return tmp;
-    }
-
-    bool
-    operator==(const qs_iterator &other) const noexcept
-    {
-        if ((value_.first.data() == other.value_.first.data() &&
-            value_.first.size() == other.value_.first.size()) &&
-            (value_.second.data() == other.value_.second.data() &&
-            value_.second.size() == other.value_.second.size()))
-            return true;
-        return false;
-    }
-
-    bool
-    operator!=(const qs_iterator &other) const noexcept
-    {
-        return !(*this == other);
-    }
-
-    string_view
-    key() const noexcept
-    {
-        return value_.first;
-    }
-
-    string_view
-    value() const noexcept
-    {
-        return value_.second;
-    }
-
-protected:
-    BOOST_BEAST_DECL
-    void
-    qs_parse() noexcept;
+        string_view s_;
+        value_type value_;
+    };
 
     BOOST_BEAST_DECL
-    void
-    increment();
+    const_iterator
+    begin() const
+    {
+        return const_iterator{s_};
+    }
 
-protected:
-    string_view qs_;
-    value_type value_;
+    BOOST_BEAST_DECL
+    const_iterator
+    end() const
+    {
+        return {};
+    }
+
+private:
+    string_view s_;
 };
 
 } // socks

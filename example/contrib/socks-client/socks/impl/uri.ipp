@@ -469,7 +469,7 @@ parse(string_view url) noexcept
         case query:
             if (c == '#')
             {
-                query_ = string_view(part_start, b - part_start - 1);
+                query_string_ = string_view(part_start, b - part_start - 1);
                 if (b == e)
                     return true;
                 part_start = b;
@@ -478,7 +478,7 @@ parse(string_view url) noexcept
             }
             if (b == e)
             {
-                query_ = string_view(part_start, b - part_start);
+                query_string_ = string_view(part_start, b - part_start);
                 return true;
             }
             if (ishsegment(c) || issubdelims(c) || c == '/' || c == '?')
