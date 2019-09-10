@@ -9,7 +9,7 @@
 #
 
 GroupSources(include/boost/beast beast)
-GroupSources(example/socks "/")
+GroupSources(example/contrib/socks-client "/")
 
 add_executable (socks-client-coro
     ${BOOST_BEAST_FILES}
@@ -24,4 +24,4 @@ target_link_libraries(socks-client-coro
     lib-asio
     lib-beast)
 
-set_property(TARGET socks-client-coro PROPERTY FOLDER "example")
+set_property(TARGET socks-client-coro PROPERTY FOLDER "contrib")
