@@ -14,7 +14,7 @@
 //
 //------------------------------------------------------------------------------
 
-#include <socks/client.hpp>
+#include <socks/handshake.hpp>
 #include <socks/uri.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>

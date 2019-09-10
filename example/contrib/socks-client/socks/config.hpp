@@ -12,9 +12,16 @@
 
 #include <boost/beast/core/string.hpp>
 
+namespace boost {
+namespace asio {
+} // asio
+} // boost
+
 namespace socks {
 
 using ::boost::beast::string_view;
+
+namespace net = ::boost::asio;
 
 } // socks
 

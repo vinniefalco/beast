@@ -7,11 +7,9 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef SOCKS_CLIENT_HPP
-#define SOCKS_CLIENT_HPP
+#ifndef SOCKS_IMPL_HANDSHAKE_HPP
+#define SOCKS_IMPL_HANDSHAKE_HPP
 
-#include <socks/config.hpp>
-#include <socks/error.hpp>
 #include <socks/detail/protocol.hpp>
 #include <boost/beast/core/async_base.hpp>
 #include <boost/beast/core/detail/is_invocable.hpp>
@@ -27,12 +25,8 @@
 #include <utility>
 #include <type_traits>
 
+
 namespace socks {
-
-namespace beast = boost::beast;
-namespace net = beast::net;
-
-using net::ip::tcp;
 
 namespace detail {
 
@@ -55,18 +49,18 @@ void write(type v, target& p)
 } // detail
 
 template<
-    class AsyncStream,
+    class Stream,
     class Handler,
     class Buffer,
     class base_type = beast::async_base<
-        Handler, typename AsyncStream::executor_type>>
+        Handler, typename Stream::executor_type>>
 class socks4_op : public base_type
 {
 public:
     socks4_op(socks4_op&&) = default;
     socks4_op(socks4_op const&) = default;
 
-    socks4_op(AsyncStream& stream, Handler& handler,
+    socks4_op(Stream& stream, Handler& handler,
         const std::string& hostname, unsigned short port,
         const std::string& username)
         : base_type(std::move(handler), stream.get_executor())
@@ -162,7 +156,7 @@ public:
     }
 
 private:
-    AsyncStream& stream_;
+    Stream& stream_;
 
     using BufferPtr = std::unique_ptr<Buffer>;
     BufferPtr request_{ new Buffer() }; // std::make_unique c++14 or later.
@@ -174,29 +168,44 @@ private:
     int step_ = 0;
 };
 
-template<class AsyncStream, class Handler, class Buffer,
-    class base_type = beast::async_base<Handler, typename AsyncStream::executor_type>>
+template<
+    class Stream,
+    class Handler,
+    class Buffer,
+    class base_type = beast::async_base<
+        Handler, typename Stream::executor_type>>
 class socks5_op : public base_type
 {
 public:
     socks5_op(socks5_op&&) = default;
     socks5_op(socks5_op const&) = default;
 
-    socks5_op(AsyncStream& stream, Handler& handler,
-        const std::string& hostname, unsigned short port,
-        const std::string& username, const std::string& password,
+    socks5_op(
+        Stream& stream,
+        Handler& handler,
+        const std::string& hostname,
+        unsigned short port,
+        const std::string& username,
+        const std::string& password,
         bool use_hostname)
-        : base_type(std::move(handler), stream.get_executor()),
-        stream_(stream),
-        hostname_(hostname), port_(port),
-        username_(username), password_(password),
-        use_hostname_(use_hostname)
+        : base_type(std::move(handler), stream.get_executor())
+        , stream_(stream)
+        , hostname_(hostname)
+        , port_(port)
+        , username_(username)
+        , password_(password)
+        , use_hostname_(use_hostname)
     {
         (*this)({}, 0); // start the operation
     }
 
-    void operator()(error_code ec, std::size_t/*bytes_transferred*/)
+    void
+    operator()(
+        error_code ec,
+        std::size_t bytes_transferred)
     {
+        boost::ignore_unused(bytes_transferred);
+
         using detail::write;
         using detail::read;
 
@@ -454,7 +463,7 @@ public:
 
             if (atyp == detail::SOCKS5_ATYP_IPV4)
             {
-                tcp::endpoint remote_endp(
+                net::ip::tcp::endpoint remote_endp(
                     net::ip::address_v4(read<uint32_t>(resp)),
                     read<uint16_t>(resp));
 
@@ -468,7 +477,7 @@ public:
                 for (auto i = 0; i < 16; i++)
                     bytes[i] = read<uint8_t>(resp);
 
-                tcp::endpoint remote_endp(
+                net::ip::tcp::endpoint remote_endp(
                     net::ip::address_v6(bytes),
                     read<uint16_t>(resp));
 
@@ -511,8 +520,7 @@ public:
     }
 
 private:
-
-    AsyncStream& stream_;
+    Stream& stream_;
 
     using BufferPtr = std::unique_ptr<Buffer>;
     BufferPtr request_ { new Buffer() };
@@ -544,7 +552,7 @@ async_handshake_v4(
     net::async_completion<Handler, void(error_code)> init{ handler };
     using HandlerType = typename std::decay<decltype(init.completion_handler)>::type;
 
-    static_assert(beast::detail::is_invocable<HandlerType,
+    static_assert(boost::beast::detail::is_invocable<HandlerType,
         void(error_code)>::value, "Handler type requirements not met");
 
     using Buffer = net::basic_streambuf<typename std::allocator_traits<
@@ -575,7 +583,7 @@ async_handshake_v5(
     net::async_completion<Handler, void(error_code)> init{ handler };
     using HandlerType = typename std::decay<decltype(init.completion_handler)>::type;
 
-    static_assert(beast::detail::is_invocable<HandlerType,
+    static_assert(boost::beast::detail::is_invocable<HandlerType,
         void(error_code)>::value, "Handler type requirements not met");
 
     using Buffer = net::basic_streambuf<typename std::allocator_traits<
