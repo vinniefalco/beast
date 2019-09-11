@@ -55,7 +55,6 @@ parse(string_view url) noexcept
         probe_userinfo_hostname,
         host_start,
         host,
-        port_start,
         port,
         path,
         query,
@@ -68,6 +67,9 @@ parse(string_view url) noexcept
     const char* v6_start = nullptr;
     const char* v6_end = nullptr;
     bool is_ipv6 = false;
+    bool is_ipv4 = true;
+    bool host_vaild = true;
+    bool port_vaild = false;
     string_view probe;
 
     while (b != e)
@@ -96,14 +98,6 @@ parse(string_view url) noexcept
         case slash_start:
             if (c == '/')
             {
-                if (iequals(scheme_, "file"))
-                {
-                    if (b + 1 < e)
-                    {
-                        if (*b == '/' && *(b + 1) == '/')
-                            b++;
-                    }
-                }
                 state = slash;
             }
             else
@@ -129,6 +123,15 @@ parse(string_view url) noexcept
         case slash:
             if (c == '/')
             {
+                if (iequals(scheme_, "file"))
+                {
+                    if (*b == '/')
+                    {
+                        state = path;
+                        part_start = b;
+                        continue;
+                    }
+                }
                 state = probe_userinfo_hostname;
                 part_start = b;
                 continue;
@@ -169,17 +172,38 @@ parse(string_view url) noexcept
                     username_ = string_view(part_start, b - part_start - 1); // username
                 }
 
+                v6_start = nullptr;
+                v6_end = nullptr;
+
                 is_ipv6 = false;
+                is_ipv4 = true;
 
                 part_start = b;
-                state = host_start;
+                state = host;
                 continue;
             }
 
             if (c == ':')
             {
+                if (b == e)
+                {
+                    auto host_size = b - part_start - 1;
+                    if (host_size == 0)
+                        return false;
+                    host_ = string_view(part_start, host_size);
+                    return true;
+                }
+
                 if (probe.empty())
-                    probe = string_view(part_start, b - part_start - 1); // username or hostname
+                {
+                    auto part_size = b - part_start - 1;
+                    probe = string_view(part_start, part_size); // username or hostname
+                    if (part_size > 0)
+                        host_vaild = true;
+                    else
+                        host_vaild = false;
+                    port_vaild = true;
+                }
                 continue;
             }
 
@@ -193,24 +217,38 @@ parse(string_view url) noexcept
                     host_ = string_view(v6_start, v6_end - v6_start); // hostname
                     if (!probe.empty()) // port
                     {
-                        auto port = probe.data() + probe.size() + 1;
-                        port_ = string_view(port, b - port - 1);
+                        if (!port_vaild)
+                            return false;
+
+                        auto port_start = probe.data() + probe.size() + 1;
+                        auto port_size = b - port_start - 1;
+
+                        port_ = string_view(port_start, port_size);
                     }
                 }
                 else
                 {
-                    if (v6_start || v6_end)
+                    if (v6_start || v6_end || !host_vaild)
                         return false;
 
                     if (!probe.empty()) // port
                     {
-                        auto port = probe.data() + probe.size() + 1;
-                        port_ = string_view(port, b - port - 1);
+                        if (!port_vaild)
+                            return false;
+
+                        auto port_start = probe.data() + probe.size() + 1;
+                        auto port_size = b - port_start - 1;
+
+                        port_ = string_view(port_start, port_size);
                         host_ = probe;
                     }
                     else // hostname
                     {
-                        host_ = string_view(part_start, b - part_start - 1);
+                        auto host_size = b - part_start - 1;
+                        if (host_size == 0)
+                            return false;
+
+                        host_ = string_view(part_start, host_size);
                     }
                 }
 
@@ -237,39 +275,6 @@ parse(string_view url) noexcept
                     continue;
                 }
             }
-            if (b == e)
-            {
-                if (is_ipv6)
-                {
-                    if (!v6_start || !v6_end || v6_start == v6_end)
-                        return false;
-
-                    host_ = string_view(v6_start, v6_end - v6_start); // hostname
-                    if (!probe.empty()) // port
-                    {
-                        auto port = probe.data() + probe.size() + 1;
-                        port_ = string_view(port, b - port);
-                    }
-                }
-                else
-                {
-                    if (v6_start || v6_end)
-                        return false;
-
-                    if (!probe.empty()) // port
-                    {
-                        auto port = probe.data() + probe.size() + 1;
-                        port_ = string_view(port, b - port);
-                        host_ = probe; // hostname
-                    }
-                    else // hostname
-                    {
-                        host_ = string_view(part_start, b - part_start);
-                    }
-                }
-
-                return true;
-            }
             if (is_ipv6)
             {
                 if (!isdigit(c)
@@ -285,10 +290,65 @@ parse(string_view url) noexcept
                     is_ipv6 = false;
                 }
             }
+            if (!isdigit(c))
+            {
+                port_vaild = false;
+
+                if (c != '.' && probe.empty())
+                    is_ipv4 = false;
+            }
+
+            if (b == e)
+            {
+                if (is_ipv6)
+                {
+                    if (!v6_start || !v6_end || v6_start == v6_end)
+                        return false;
+
+                    host_ = string_view(v6_start, v6_end - v6_start); // hostname
+                    if (!probe.empty()) // port
+                    {
+                        if (!port_vaild)
+                            return false;
+
+                        auto port_start = probe.data() + probe.size() + 1;
+                        auto port_size = b - port_start;
+
+                        port_ = string_view(port_start, port_size);
+                    }
+                }
+                else
+                {
+                    if (v6_start || v6_end)
+                        return false;
+
+                    if (!probe.empty()) // port
+                    {
+                        if (!port_vaild)
+                            return false;
+
+                        auto port_start = probe.data() + probe.size() + 1;
+                        auto port_size = b - port_start;
+
+                        port_ = string_view(port_start, port_size);
+                        host_ = probe; // hostname
+                    }
+                    else // hostname
+                    {
+                        if (!host_vaild)
+                            return false;
+                        host_ = string_view(part_start, b - part_start);
+                    }
+                }
+
+                return true;
+            }
             if (isunreserved(c) || issubdelims(c) || c == '%' || c == ' ' || c == '[' || c == ']')
                 continue;
             return false;
         case host_start:
+            if (!isdigit(c) && c != '.')
+                is_ipv4 = false;
             if (isunreserved(c) || issubdelims(c) || c == '%' || c == '[')
             {
                 if (c == '[')
@@ -302,32 +362,33 @@ parse(string_view url) noexcept
             }
             return false;
         case host:
-            if (b == e) // end
+            if (!isdigit(c) && c != '.')
+                is_ipv4 = false;
+            if (c == '[')
             {
-                if (is_ipv6 && c == '/')
+                if (v6_start)
                     return false;
 
-                if (c == '/' || c == ']')
-                {
-                    host_ = string_view(part_start, b - part_start - 1);
-                    return true;
-                }
-
-                host_ = string_view(part_start, b - part_start);
-                return true;
+                is_ipv6 = true;
+                v6_start = b;
+                continue;
             }
             if (is_ipv6)
             {
                 if (c == ']')
                 {
-                    host_ = string_view(part_start, b - part_start - 1);
+                    v6_end = b - 1;
+                    auto host_size = v6_end - v6_start;
+                    if (host_size == 0)
+                        return false;
+                    host_ = string_view(v6_start, host_size);
                     if (b == e)
                         return true;
                     if (*b == ':')
                     {
                         b++; // skip ':'
                         part_start = b;
-                        state = port_start;
+                        state = port;
                         continue;
                     }
                     if (*b == '/')
@@ -363,24 +424,31 @@ parse(string_view url) noexcept
             {
                 if (c == ':')
                 {
-                    host_ = string_view(part_start, b - part_start - 1);
+                    auto host_size = b - part_start - 1;
+                    if (host_size == 0)
+                        return false;
+                    host_ = string_view(part_start, host_size);
                     part_start = b;
-                    state = port_start;
+                    state = port;
                     continue;
                 }
             }
             if (c == '/')
             {
-                host_ = string_view(part_start, b - part_start - 1);
+                auto host_size = b - part_start - 1;
+                if (host_size == 0)
+                    return false;
+                host_ = string_view(part_start, host_size);
                 part_start = --b;
                 state = path;
                 continue;
             }
-            if (isunreserved(c) || issubdelims(c) || c == '%' || c == ':' || c == ' ')
-                continue;
             if (c == '?')
             {
-                host_ = string_view(part_start, b - part_start - 1);
+                auto host_size = b - part_start - 1;
+                if (host_size == 0)
+                    return false;
+                host_ = string_view(part_start, host_size);
                 if (b == e)
                     return true;
                 part_start = b;
@@ -389,20 +457,26 @@ parse(string_view url) noexcept
             }
             if (c == '#')
             {
-                host_ = string_view(part_start, b - part_start - 1);
+                auto host_size = b - part_start - 1;
+                if (host_size == 0)
+                    return false;
+                host_ = string_view(part_start, host_size);
                 if (b == e)
                     return true;
                 part_start = b;
                 state = fragment;
                 continue;
             }
-            return false;
-        case port_start:
-            if (isdigit(c))
+            if (b == e) // end
             {
-                state = port;
-                continue;
+                auto host_size = b - part_start;
+                if (host_size == 0)
+                    return false;
+                host_ = string_view(part_start, host_size);
+                return true;
             }
+            if (isunreserved(c) || issubdelims(c) || c == '%' || c == ':' || c == '@')
+                continue;
             return false;
         case port:
             if (c == '/')
