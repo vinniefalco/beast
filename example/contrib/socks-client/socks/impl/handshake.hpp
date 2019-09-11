@@ -52,7 +52,7 @@ template<
     class Stream,
     class Handler,
     class Buffer,
-    class base_type = beast::async_base<
+    class base_type = boost::beast::async_base<
         Handler, typename Stream::executor_type>>
 class socks4_op : public base_type
 {
@@ -172,7 +172,7 @@ template<
     class Stream,
     class Handler,
     class Buffer,
-    class base_type = beast::async_base<
+    class base_type = boost::beast::async_base<
         Handler, typename Stream::executor_type>>
 class socks5_op : public base_type
 {
