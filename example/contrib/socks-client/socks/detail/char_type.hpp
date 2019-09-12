@@ -34,6 +34,13 @@ isalpha(const char c) noexcept
 
 inline
 bool
+ishexdigit(const char c) noexcept
+{
+    return isdigit(c) || ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
+}
+
+inline
+bool
 isunreserved(const char c) noexcept
 {
     if (isalpha(c) || isdigit(c) ||
@@ -123,6 +130,63 @@ to_hex(unsigned char c) noexcept
 
     return string_view(hexstring[c]);
 }
+
+inline
+int64_t
+from_string(string_view str, int base = -1)
+{
+    const char* start = str.data();
+    const char* end = str.data() + str.size();
+
+    if (start >= end)
+        return 0;
+
+    bool has_prefix = false;
+
+    if (*start == '0')
+    {
+        if (base == -1)
+            base = 8;
+
+        if (end - start >= 2 &&
+            boost::beast::detail::ascii_tolower(*(start + 1)) == 'x')
+        {
+            if (base == -1)
+                base = 16;
+            has_prefix = true;
+        }
+    }
+
+    if (base == -1)
+        base = 10;
+
+    if (base == 16 && has_prefix)
+        start += 2;
+
+    const char* p = start;
+    while (p < end)
+    {
+        const char c = *p++;
+        switch (base)
+        {
+        case 8:
+            if (c < '0' || c > '7')
+                return -1;
+            continue;
+        case 10:
+            if (!isdigit(c))
+                return -1;
+            continue;
+        case 16:
+            if (!ishexdigit(c))
+                return -1;
+            continue;
+        }
+    }
+
+    return strtoll(start, nullptr, base);
+}
+
 
 } // detail
 } // socks

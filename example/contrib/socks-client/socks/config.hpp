@@ -11,6 +11,7 @@
 #define SOCKS_CONFIG_HPP
 
 #include <boost/beast/core/string.hpp>
+#include <boost/beast/core/detail/string.hpp>
 
 namespace boost {
 namespace asio {
