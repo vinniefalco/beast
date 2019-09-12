@@ -53,7 +53,6 @@ parse(string_view url) noexcept
         slash,
         urn,
         probe_userinfo_hostname,
-        host_start,
         host,
         port,
         path,
@@ -338,19 +337,6 @@ parse(string_view url) noexcept
             }
             if (isunreserved(c) || issubdelims(c) || c == '%' || c == ' ' || c == '[' || c == ']')
                 continue;
-            return false;
-        case host_start:
-            if (isunreserved(c) || issubdelims(c) || c == '%' || c == '[')
-            {
-                if (c == '[')
-                {
-                    is_ipv6 = true;
-                    part_start = b;
-                }
-
-                state = host;
-                continue;
-            }
             return false;
         case host:
             if (c == '[')
