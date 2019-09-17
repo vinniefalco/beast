@@ -8,7 +8,7 @@
 #
 
 local SOURCES =
-    test.cpp
+    uri.cpp
     ;
 
 local RUN_TESTS ;

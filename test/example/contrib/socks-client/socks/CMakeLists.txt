@@ -10,14 +10,13 @@
 include_directories(../../../../../example/contrib/socks-client)
 
 GroupSources (include/boost/beast beast)
-#GroupSources (example/contrib/socks-client/socks socks)
 GroupSources (test/example/contrib/socks-client/socks "/")
 
 
 add_executable (socks-test
     ${BOOST_BEAST_FILES}
     ${TEST_MAIN}
-    test.cpp
+    uri.cpp
 )
 
 target_link_libraries(socks-test
