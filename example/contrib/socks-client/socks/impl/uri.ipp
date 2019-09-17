@@ -215,8 +215,8 @@ parse(string_view url) noexcept
                     probe = string_view(part_start, part_size); // username or hostname
                     port_vaild = true;
                     has_port = true;
+		    continue;
                 }
-                continue;
             }
 
             if (c == '/' || c == '?' || c == '#')
@@ -343,7 +343,7 @@ parse(string_view url) noexcept
 
                 return true;
             }
-            if (isunreserved(c) || issubdelims(c) || c == '%' || c == ' ' || c == '[' || c == ']')
+            if (isunreserved(c) || issubdelims(c) || c == '%' || c == ' ' || c == '[' || c == ']' || c == ':')
                 continue;
             return false;
         case host:

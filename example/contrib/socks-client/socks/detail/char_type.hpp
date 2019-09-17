@@ -45,8 +45,7 @@ isunreserved(const char c) noexcept
 {
     if (isalpha(c) || isdigit(c) ||
         c == '-' || c == '.' ||
-        c == '_' || c == '~' ||
-        c <= 0x20 || 0x7f <= c)
+        c == '_' || c == '~')
         return true;
     return false;
 }

@@ -7,5 +7,4 @@
 # Official repository: https://github.com/boostorg/beast
 #
 
-add_subdirectory (common)
-add_subdirectory (contrib)
+add_subdirectory (socks-client)
