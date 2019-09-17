@@ -66,9 +66,24 @@ parse(string_view url) noexcept
     const char* v6_start = nullptr;
     const char* v6_end = nullptr;
     bool is_ipv6 = false;
-    bool host_vaild = true;
+    bool has_port = false;
     bool port_vaild = false;
     string_view probe;
+
+    auto check_host = [&]() {
+        if (is_ipv6)
+        {
+            if (is_ipv6_host(host_) == host_invalid)
+                return false;
+        }
+        else
+        {
+            if (is_ipv4_host(host_) == host_invalid)
+                return false;
+        }
+
+        return true;
+    };
 
     while (b != e)
     {
@@ -188,6 +203,8 @@ parse(string_view url) noexcept
                     if (host_size == 0)
                         return false;
                     host_ = string_view(part_start, host_size);
+                    if (!check_host())
+                        return false;
                     return true;
                 }
 
@@ -195,11 +212,8 @@ parse(string_view url) noexcept
                 {
                     auto part_size = b - part_start - 1;
                     probe = string_view(part_start, part_size); // username or hostname
-                    if (part_size > 0)
-                        host_vaild = true;
-                    else
-                        host_vaild = false;
                     port_vaild = true;
+                    has_port = true;
                 }
                 continue;
             }
@@ -225,10 +239,10 @@ parse(string_view url) noexcept
                 }
                 else
                 {
-                    if (v6_start || v6_end || !host_vaild)
+                    if (v6_start || v6_end)
                         return false;
 
-                    if (!probe.empty()) // port
+                    if (has_port)
                     {
                         if (!port_vaild)
                             return false;
@@ -248,6 +262,9 @@ parse(string_view url) noexcept
                         host_ = string_view(part_start, host_size);
                     }
                 }
+
+                if (!check_host())
+                    return false;
 
                 if (c == '/')
                 {
@@ -270,21 +287,6 @@ parse(string_view url) noexcept
                     part_start = b;
                     state = fragment;
                     continue;
-                }
-            }
-            if (is_ipv6)
-            {
-                if (!isdigit(c)
-                    && c != 'a' && c != 'A'
-                    && c != 'b' && c != 'B'
-                    && c != 'c' && c != 'C'
-                    && c != 'd' && c != 'D'
-                    && c != 'e' && c != 'E'
-                    && c != 'f' && c != 'F'
-                    && c != ':' && c != ']'
-                    && c != '[' && c != '.')
-                {
-                    is_ipv6 = false;
                 }
             }
             if (!isdigit(c))
@@ -314,7 +316,7 @@ parse(string_view url) noexcept
                     if (v6_start || v6_end)
                         return false;
 
-                    if (!probe.empty()) // port
+                    if (has_port)
                     {
                         if (!port_vaild)
                             return false;
@@ -327,11 +329,16 @@ parse(string_view url) noexcept
                     }
                     else // hostname
                     {
-                        if (!host_vaild)
+                        auto host_size = b - part_start;
+                        if (host_size == 0)
                             return false;
-                        host_ = string_view(part_start, b - part_start);
+
+                        host_ = string_view(part_start, host_size);
                     }
                 }
+
+                if (!check_host())
+                    return false;
 
                 return true;
             }
@@ -357,6 +364,8 @@ parse(string_view url) noexcept
                     if (host_size == 0)
                         return false;
                     host_ = string_view(v6_start, host_size);
+                    if (!check_host())
+                        return false;
                     if (b == e)
                         return true;
                     if (*b == ':')
@@ -403,6 +412,8 @@ parse(string_view url) noexcept
                     if (host_size == 0)
                         return false;
                     host_ = string_view(part_start, host_size);
+                    if (!check_host())
+                        return false;
                     part_start = b;
                     state = port;
 
@@ -415,6 +426,8 @@ parse(string_view url) noexcept
                 if (host_size == 0)
                     return false;
                 host_ = string_view(part_start, host_size);
+                if (!check_host())
+                    return false;
                 part_start = --b;
                 state = path;
 
@@ -426,6 +439,8 @@ parse(string_view url) noexcept
                 if (host_size == 0)
                     return false;
                 host_ = string_view(part_start, host_size);
+                if (!check_host())
+                    return false;
                 if (b == e)
                     return true;
                 part_start = b;
@@ -438,6 +453,8 @@ parse(string_view url) noexcept
                 if (host_size == 0)
                     return false;
                 host_ = string_view(part_start, host_size);
+                if (!check_host())
+                    return false;
                 if (b == e)
                     return true;
                 part_start = b;
@@ -450,6 +467,8 @@ parse(string_view url) noexcept
                 if (host_size == 0)
                     return false;
                 host_ = string_view(part_start, host_size);
+                if (!check_host())
+                    return false;
                 return true;
             }
             if (isunreserved(c) || issubdelims(c) || c == '%' || c == ':' || c == '@')
@@ -771,7 +790,11 @@ is_ipv4_host(string_view str)
     }
 
     if (parts == 0 || parts > 4)
+    {
+        if (str.size() == 0)
+            return host_invalid;
         return host_unkwon;
+    }
 
     if (max > 255 && last < max)
         return host_invalid;
