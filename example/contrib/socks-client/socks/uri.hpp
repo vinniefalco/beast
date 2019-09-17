@@ -126,23 +126,6 @@ private:
     BOOST_BEAST_DECL
     string_view
     known_port() noexcept;
-
-    enum host_type
-    {
-        host_unkwon,
-        host_ipv4,
-        host_ipv6,
-        host_domain,
-        host_invalid,
-    };
-
-    BOOST_BEAST_DECL
-    host_type
-    is_ipv4_host(string_view str);
-
-    BOOST_BEAST_DECL
-    host_type
-    is_ipv6_host(string_view str);
 };
 
 } // socks
