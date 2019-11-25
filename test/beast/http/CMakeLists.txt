@@ -32,6 +32,7 @@ add_executable (tests-beast-http
     parser.cpp
     read.cpp
     rfc7230.cpp
+    sandbox.cpp
     serializer.cpp
     span_body.cpp
     status.cpp
