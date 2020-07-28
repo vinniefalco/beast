@@ -62,6 +62,7 @@ add_executable (tests-beast-core
     stream_traits.cpp
     string.cpp
     tcp_stream.cpp
+    write_any.cpp
 )
 
 target_link_libraries(tests-beast-core

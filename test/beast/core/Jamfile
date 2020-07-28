@@ -53,6 +53,7 @@ local SOURCES =
     stream_traits.cpp
     string.cpp
     tcp_stream.cpp
+    write_any.cpp
     ;
 
 local RUN_TESTS ;
