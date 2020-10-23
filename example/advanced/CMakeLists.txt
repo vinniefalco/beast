@@ -7,5 +7,6 @@
 # Official repository: https://github.com/boostorg/beast
 #
 
+add_subdirectory (multi-context-server)
 add_subdirectory (server)
 add_subdirectory (server-flex)
