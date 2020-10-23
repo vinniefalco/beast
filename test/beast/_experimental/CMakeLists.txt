@@ -15,6 +15,7 @@ add_executable (tests-beast-_experimental
     Jamfile
     error.cpp
     icy_stream.cpp
+    multi_io_context.cpp
     stream.cpp
 )
 

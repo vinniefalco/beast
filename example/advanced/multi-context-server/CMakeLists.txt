@@ -19,7 +19,7 @@ if (OPENSSL_FOUND)
         multi_context_server.cpp
     )
 
-    set_property(TARGET multi-context-server PROPERTY FOLDER "example-multi-context-server")
+    set_property(TARGET multi-context-server PROPERTY FOLDER "example-advanced-server")
     
     target_link_libraries (multi-context-server
         OpenSSL::SSL OpenSSL::Crypto
