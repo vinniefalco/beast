@@ -11,6 +11,7 @@
 #define BOOST_BEAST_WEBSOCKET_IMPL_STREAM_IMPL_HPP
 
 #include <boost/beast/websocket/rfc6455.hpp>
+#include <boost/beast/websocket/frame_stream.hpp>
 #include <boost/beast/websocket/detail/frame.hpp>
 #include <boost/beast/websocket/detail/hybi13.hpp>
 #include <boost/beast/websocket/detail/mask.hpp>
@@ -35,6 +36,8 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
+
+#include <boost/beast/websocket/frame_stream.hpp>
 
 namespace boost {
 namespace beast {
@@ -123,6 +126,8 @@ struct stream<NextLayer, deflateSupported>::impl_type
     detail::decorator       decorator_opt;  // Decorator for HTTP messages
     timeout                 timeout_opt;    // Timeout/idle settings
 
+    frame_stream fs_;
+
     template<class... Args>
     impl_type(Args&&... args)
         : boost::empty_value<NextLayer>(
@@ -132,6 +137,7 @@ struct stream<NextLayer, deflateSupported>::impl_type
             this->get_context(
                 this->boost::empty_value<NextLayer>::get().get_executor()))
         , timer(this->boost::empty_value<NextLayer>::get().get_executor())
+        , fs_(65536)
     {
         timeout_opt.handshake_timeout = none();
         timeout_opt.idle_timeout = none();
@@ -177,6 +183,8 @@ struct stream<NextLayer, deflateSupported>::impl_type
         wr_buf_size = 0;
 
         this->open_pmd(role);
+
+        fs_.reset(role);
     }
 
     void
