@@ -79,11 +79,6 @@ struct ping_view
 class frame_stream
 {
 public:
-    struct full_results
-    {
-        core::span<
-    };
-
     template<unsigned Size>
     struct results
     {
