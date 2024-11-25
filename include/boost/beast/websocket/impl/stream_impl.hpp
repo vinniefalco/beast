@@ -11,7 +11,7 @@
 #define BOOST_BEAST_WEBSOCKET_IMPL_STREAM_IMPL_HPP
 
 #include <boost/beast/websocket/rfc6455.hpp>
-#include <boost/beast/websocket/frame_stream.hpp>
+#include <boost/beast/websocket/frame_reader.hpp>
 #include <boost/beast/websocket/detail/frame.hpp>
 #include <boost/beast/websocket/detail/hybi13.hpp>
 #include <boost/beast/websocket/detail/mask.hpp>
@@ -37,7 +37,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
 
-#include <boost/beast/websocket/frame_stream.hpp>
+#include <boost/beast/websocket/frame_reader.hpp>
 
 namespace boost {
 namespace beast {
@@ -126,7 +126,7 @@ struct stream<NextLayer, deflateSupported>::impl_type
     detail::decorator       decorator_opt;  // Decorator for HTTP messages
     timeout                 timeout_opt;    // Timeout/idle settings
 
-    frame_stream fs_;
+    frame_reader fs_;
 
     template<class... Args>
     impl_type(Args&&... args)

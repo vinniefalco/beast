@@ -12,6 +12,7 @@
 
 #include <boost/beast/core/detail/config.hpp>
 #include <boost/beast/core/role.hpp>
+#include <boost/core/span.hpp>
 
 #if 0
 #include <boost/beast/websocket/detail/frame.hpp>
@@ -22,7 +23,6 @@
 #include <boost/beast/core/error.hpp>
 #include <memory>
 
-#include <boost/core/span.hpp>
 #include <boost/core/detail/string_view.hpp>
 #endif
 
@@ -53,7 +53,7 @@ public:
 
     /** Return a constant buffer representing the output area.
     */
-    span<unsigned char>
+    span<unsigned char const>
     data() const noexcept;
 
     /** Consume bytes from the output area.
@@ -64,24 +64,7 @@ public:
 private:
     std::size_t const buf_size_;                // size of write buffer
     unsigned char* buf_;                        // write buffer
-
-    std::size_t rd_have_;                       // new data in buffer
-    std::size_t rd_pos_;                        // position of leftover if any
-
-    detail::utf8_checker utf8_;                 // to validate utf8
-    
     beast::role_type role_;
-    state st_;
-
-    unsigned char fh_need_;                     // header bytes we need
-
-    bool can_deflate_ = false;                  // if pmd is negotiated
-
-    detail::prepared_key key_;                  // current stateful mask key
-
-    detail::frame_header fh_;
-    frame_view fv_[100];
-    bool expect_cont_ = false;
 };
 
 //------------------------------------------------

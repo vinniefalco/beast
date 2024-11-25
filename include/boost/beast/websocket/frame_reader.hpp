@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/beast
 //
 
-#ifndef BOOST_BEAST_WEBSOCKET_FRAME_STREAM_HPP
-#define BOOST_BEAST_WEBSOCKET_FRAME_STREAM_HPP
+#ifndef BOOST_BEAST_WEBSOCKET_FRAME_READER_HPP
+#define BOOST_BEAST_WEBSOCKET_FRAME_READER_HPP
 
 #include <boost/beast/core/detail/config.hpp>
 #include <boost/beast/websocket/detail/frame.hpp>
@@ -76,7 +76,7 @@ struct ping_view
 
 /** Parses incoming frame data.
 */
-class frame_stream
+class frame_reader
 {
 public:
     template<unsigned Size>
@@ -89,16 +89,16 @@ public:
         core::span<message_view> messages;
 
     private:
-        friend class frame_stream;
+        friend class frame_reader;
     };
 
     std::size_t msg_max = 65536;                    // maximum allowed message size
     boost::span<frame_view> frames;
 
-    ~frame_stream();
+    ~frame_reader();
 
     explicit
-    frame_stream(
+    frame_reader(
         std::size_t size);
 
     void
@@ -170,15 +170,15 @@ private:
 //------------------------------------------------
 
 inline
-frame_stream::
-~frame_stream()
+frame_reader::
+~frame_reader()
 {
     delete[] rd_buf_;
 }
 
 inline
-frame_stream::
-frame_stream(
+frame_reader::
+frame_reader(
     std::size_t size)
     : rd_buf_size_(
         [&]()
@@ -193,7 +193,7 @@ frame_stream(
 
 inline
 void
-frame_stream::
+frame_reader::
 reset(
     role_type role) noexcept
 {
@@ -206,7 +206,7 @@ reset(
 
 inline
 span<unsigned char>
-frame_stream::
+frame_reader::
 prepare()
 {
     if( rd_have_ > 0 &&
@@ -226,7 +226,7 @@ prepare()
 
 inline
 void
-frame_stream::
+frame_reader::
 commit(
     std::size_t size)
 {
@@ -241,7 +241,7 @@ commit(
 
 inline
 void
-frame_stream::
+frame_reader::
 read(
     error_code& ec)
 {
@@ -529,7 +529,7 @@ do_return:
 
 inline
 void
-frame_stream::
+frame_reader::
 append_frame(
     void* data,
     std::size_t len)
