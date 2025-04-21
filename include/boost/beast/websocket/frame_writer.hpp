@@ -53,13 +53,21 @@ public:
 
     /** Return a constant buffer representing the output area.
     */
-    span<unsigned char const>
+    core::span<unsigned char const>
     data() const noexcept;
 
     /** Consume bytes from the output area.
     */
     void
     consume(std::size_t size);
+
+    void
+    append_message(
+        core::span<unsigned char const>);
+
+    void
+    append_message(
+        core::span<unsigned char>);
 
 private:
     std::size_t const buf_size_;                // size of write buffer

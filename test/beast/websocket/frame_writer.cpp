@@ -16,6 +16,20 @@ namespace boost {
 namespace beast {
 namespace websocket {
 
+namespace {
+
+class stream
+{
+public:
+
+    template<class ConstBufferSequence>
+    auto
+    async_write(
+        ConstBufferSequence&& m);
+};
+
+} // (anon)
+
 struct frame_writer_test
     : beast::unit_test::suite
 {
