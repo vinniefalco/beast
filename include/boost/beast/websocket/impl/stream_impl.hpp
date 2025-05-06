@@ -37,8 +37,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
 
-#include <boost/beast/websocket/frame_reader.hpp>
-
 namespace boost {
 namespace beast {
 namespace websocket {
