@@ -18,6 +18,7 @@
 #include <boost/beast/core/role.hpp>
 #include <boost/assert.hpp>
 #include <boost/beast/core/error.hpp>
+#include <boost/buffers/circular_buffer.hpp>
 #include <memory>
 
 #include <boost/core/span.hpp>

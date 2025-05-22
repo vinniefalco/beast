@@ -58,6 +58,7 @@ set(BOOST_BEAST_DEPENDENCIES
     Boost::asio
     Boost::assert
     Boost::bind
+    Boost::buffers
     Boost::config
     Boost::container
     Boost::container_hash

@@ -199,16 +199,16 @@ public:
                         if(bytes_transferred > 0)
                         {
                             system::error_code uec;
-                            auto const dest = impl.fs_.prepare();
+                            auto const dest = impl.fr_.prepare();
                             buffers_suffix<decltype(
                                 impl.rd_buf.data())> in(impl.rd_buf.data());
                             in.consume(impl.rd_buf.size() - bytes_transferred);
-                            impl.fs_.commit(asio::buffer_copy(
+                            impl.fr_.commit(asio::buffer_copy(
                                 asio::mutable_buffer(
                                     dest.data(),
                                     dest.size()),
                                 in));
-                            impl.fs_.read(uec);
+                            impl.fr_.read(uec);
                         }
                     }
                     if(impl.check_stop_now(ec))

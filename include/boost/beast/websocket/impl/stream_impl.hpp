@@ -124,7 +124,7 @@ struct stream<NextLayer, deflateSupported>::impl_type
     detail::decorator       decorator_opt;  // Decorator for HTTP messages
     timeout                 timeout_opt;    // Timeout/idle settings
 
-    frame_reader fs_;
+    frame_reader fr_;
 
     template<class... Args>
     impl_type(Args&&... args)
@@ -135,7 +135,7 @@ struct stream<NextLayer, deflateSupported>::impl_type
             this->get_context(
                 this->boost::empty_value<NextLayer>::get().get_executor()))
         , timer(this->boost::empty_value<NextLayer>::get().get_executor())
-        , fs_(65536)
+        , fr_(65536)
     {
         timeout_opt.handshake_timeout = none();
         timeout_opt.idle_timeout = none();
@@ -182,7 +182,7 @@ struct stream<NextLayer, deflateSupported>::impl_type
 
         this->open_pmd(role);
 
-        fs_.reset(role);
+        fr_.reset(role);
     }
 
     void
