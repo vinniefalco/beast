@@ -336,19 +336,12 @@ pong(ping_data const& payload, error_code& ec)
 
 template<class NextLayer, bool deflateSupported>
 template<BOOST_BEAST_ASYNC_TPARAM1 PingHandler>
-BOOST_BEAST_ASYNC_RESULT1(PingHandler)
+BOOST_BEAST_ASYNC_RESULT1(pool_handler<PingHandler>)
 stream<NextLayer, deflateSupported>::
 async_ping(ping_data const& payload, PingHandler&& handler)
 {
-    static_assert(is_async_stream<next_layer_type>::value,
-        "AsyncStream type requirements not met");
-    return net::async_initiate<
-        PingHandler,
-        void(error_code)>(
-            run_ping_op{impl_},
-            handler,
-            detail::opcode::ping,
-            payload);
+    return async_ping_impl(payload, detail::opcode::ping,
+        std::forward<PingHandler>(handler));
 }
 
 template<class NextLayer, bool deflateSupported>
@@ -357,15 +350,25 @@ BOOST_BEAST_ASYNC_RESULT1(PongHandler)
 stream<NextLayer, deflateSupported>::
 async_pong(ping_data const& payload, PongHandler&& handler)
 {
+    return async_ping_impl(payload, detail::opcode::pong,
+        std::forward<PongHandler>(handler));
+}
+
+template<class NextLayer, bool deflateSupported>
+template<BOOST_BEAST_ASYNC_TPARAM1 PongHandler>
+BOOST_BEAST_ASYNC_RESULT1(PongHandler)
+stream<NextLayer, deflateSupported>::
+async_ping_impl(
+    ping_data const& payload,
+    detail::opcode opcode,
+    PongHandler&& handler)
+{
     static_assert(is_async_stream<next_layer_type>::value,
         "AsyncStream type requirements not met");
     return net::async_initiate<
         PongHandler,
-        void(error_code)>(
-            run_ping_op{impl_},
-            handler,
-            detail::opcode::pong,
-            payload);
+        void(error_code)>(run_ping_op{impl_},
+            handler, opcode, payload);
 }
 
 } // websocket

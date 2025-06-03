@@ -20,6 +20,7 @@
 #include <boost/beast/websocket/detail/impl_base.hpp>
 #include <boost/beast/websocket/detail/pmd_extension.hpp>
 #include <boost/beast/websocket/detail/prng.hpp>
+#include <boost/beast/core/pool.hpp>
 #include <boost/beast/core/role.hpp>
 #include <boost/beast/core/stream_traits.hpp>
 #include <boost/beast/core/string.hpp>
@@ -2912,6 +2913,40 @@ private:
         string_view host, string_view target,
             RequestDecorator const& decorator,
                 error_code& ec);
+
+    template<BOOST_BEAST_ASYNC_TPARAM1 PongHandler>
+    BOOST_BEAST_ASYNC_RESULT1(PongHandler)
+    async_ping_impl(
+        ping_data const& payload,
+        detail::opcode opcode,
+        PongHandler&& handler);
+
+    template<
+        class MutableBufferSequence,
+        BOOST_BEAST_ASYNC_TPARAM2 ReadHandler>
+    BOOST_BEAST_ASYNC_RESULT2(ReadHandler)
+    async_read_some_impl(
+        MutableBufferSequence const& buffers,
+        ReadHandler&& handler);
+
+    template<
+        class DynamicBuffer,
+        BOOST_BEAST_ASYNC_TPARAM2 ReadHandler>
+    BOOST_BEAST_ASYNC_RESULT2(ReadHandler)
+    async_read_impl(
+        DynamicBuffer& buffer,
+        std::size_t limit,
+        bool some,
+        ReadHandler&& handler);
+
+    template<
+        class ConstBufferSequence,
+        BOOST_BEAST_ASYNC_TPARAM2 WriteHandler>
+    BOOST_BEAST_ASYNC_RESULT2(WriteHandler)
+    async_write_impl(
+        ConstBufferSequence const& bs,
+        bool fin,
+        WriteHandler&& handler);
 
     //
     // fail

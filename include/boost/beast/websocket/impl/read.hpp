@@ -24,6 +24,7 @@
 #include <boost/beast/core/detail/buffer.hpp>
 #include <boost/beast/core/detail/clamp.hpp>
 #include <boost/beast/core/detail/config.hpp>
+#include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/coroutine.hpp>
 #include <boost/assert.hpp>
 #include <boost/config.hpp>
@@ -950,19 +951,10 @@ BOOST_BEAST_ASYNC_RESULT2(ReadHandler)
 stream<NextLayer, deflateSupported>::
 async_read(DynamicBuffer& buffer, ReadHandler&& handler)
 {
-    static_assert(is_async_stream<next_layer_type>::value,
-        "AsyncStream type requirements not met");
-    static_assert(
-        net::is_dynamic_buffer<DynamicBuffer>::value,
-        "DynamicBuffer type requirements not met");
-    return net::async_initiate<
-        ReadHandler,
-        void(error_code, std::size_t)>(
-            run_read_op{impl_},
-            handler,
-            &buffer,
-            0,
-            false);
+    return async_read_impl(
+        buffer, std::size_t(-1), false,
+        pool_handler(impl_->pool,
+            std::forward<ReadHandler>(handler)));
 }
 
 //------------------------------------------------------------------------------
@@ -1026,19 +1018,9 @@ async_read_some(
     std::size_t limit,
     ReadHandler&& handler)
 {
-    static_assert(is_async_stream<next_layer_type>::value,
-        "AsyncStream type requirements not met");
-    static_assert(
-        net::is_dynamic_buffer<DynamicBuffer>::value,
-        "DynamicBuffer type requirements not met");
-    return net::async_initiate<
-        ReadHandler,
-        void(error_code, std::size_t)>(
-            run_read_op{impl_},
-            handler,
-            &buffer,
-            limit,
-            true);
+    return async_read_impl(buffer, limit, true,
+        pool_handler(impl_->pool,
+            std::forward<ReadHandler>(handler)));
 }
 
 //------------------------------------------------------------------------------
@@ -1406,6 +1388,20 @@ async_read_some(
     MutableBufferSequence const& buffers,
     ReadHandler&& handler)
 {
+    return async_read_some_impl(buffers, pool_handler(
+        impl_->pool, std::forward<ReadHandler>(handler)));
+}
+
+//------------------------------------------------
+
+template<class NextLayer, bool deflateSupported>
+template<class MutableBufferSequence, BOOST_BEAST_ASYNC_TPARAM2 ReadHandler>
+BOOST_BEAST_ASYNC_RESULT2(ReadHandler)
+stream<NextLayer, deflateSupported>::
+async_read_some_impl(
+    MutableBufferSequence const& buffers,
+    ReadHandler&& handler)
+{
     static_assert(is_async_stream<next_layer_type>::value,
         "AsyncStream type requirements not met");
     static_assert(net::is_mutable_buffer_sequence<
@@ -1417,6 +1413,27 @@ async_read_some(
             run_read_some_op{impl_},
             handler,
             buffers);
+}
+
+template<class NextLayer, bool deflateSupported>
+template<class DynamicBuffer, BOOST_BEAST_ASYNC_TPARAM2 ReadHandler>
+BOOST_BEAST_ASYNC_RESULT2(ReadHandler)
+stream<NextLayer, deflateSupported>::
+async_read_impl(
+    DynamicBuffer& buffer,
+    std::size_t limit,
+    bool some,
+    ReadHandler&& handler)
+{
+    static_assert(is_async_stream<next_layer_type>::value,
+        "AsyncStream type requirements not met");
+    static_assert(
+        net::is_dynamic_buffer<DynamicBuffer>::value,
+        "DynamicBuffer type requirements not met");
+    return net::async_initiate<
+        ReadHandler, void(error_code, std::size_t)>(
+            run_read_op{impl_}, handler,
+                &buffer, limit, some);
 }
 
 } // websocket

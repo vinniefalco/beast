@@ -837,18 +837,8 @@ stream<NextLayer, deflateSupported>::
 async_write_some(bool fin,
     ConstBufferSequence const& bs, WriteHandler&& handler)
 {
-    static_assert(is_async_stream<next_layer_type>::value,
-        "AsyncStream type requirements not met");
-    static_assert(net::is_const_buffer_sequence<
-        ConstBufferSequence>::value,
-            "ConstBufferSequence type requirements not met");
-    return net::async_initiate<
-        WriteHandler,
-        void(error_code, std::size_t)>(
-            run_write_some_op{impl_},
-            handler,
-            fin,
-            bs);
+    return async_write_impl(bs, fin, pool_handler(
+        impl_->pool, std::forward<WriteHandler>(handler)));
 }
 
 //------------------------------------------------------------------------------
@@ -892,6 +882,21 @@ stream<NextLayer, deflateSupported>::
 async_write(
     ConstBufferSequence const& bs, WriteHandler&& handler)
 {
+    return async_write_impl(bs, true, pool_handler(
+        impl_->pool, std::forward<WriteHandler>(handler)));
+}
+
+//------------------------------------------------
+
+template<class NextLayer, bool deflateSupported>
+template<class ConstBufferSequence, BOOST_BEAST_ASYNC_TPARAM2 WriteHandler>
+BOOST_BEAST_ASYNC_RESULT2(WriteHandler)
+stream<NextLayer, deflateSupported>::
+async_write_impl(
+    ConstBufferSequence const& bs,
+    bool fin,
+    WriteHandler&& handler)
+{
     static_assert(is_async_stream<next_layer_type>::value,
         "AsyncStream type requirements not met");
     static_assert(net::is_const_buffer_sequence<
@@ -902,7 +907,7 @@ async_write(
         void(error_code, std::size_t)>(
             run_write_some_op{impl_},
             handler,
-            true,
+            fin,
             bs);
 }
 

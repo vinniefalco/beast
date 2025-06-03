@@ -26,6 +26,7 @@
 #include <boost/beast/core/buffers_prefix.hpp>
 #include <boost/beast/core/buffers_suffix.hpp>
 #include <boost/beast/core/flat_static_buffer.hpp>
+#include <boost/beast/core/pool.hpp>
 #include <boost/beast/core/saved_handler.hpp>
 #include <boost/beast/core/static_buffer.hpp>
 #include <boost/beast/core/stream_traits.hpp>
@@ -69,6 +70,9 @@ struct stream<NextLayer, deflateSupported>::impl_type
                 impl_type::shared_from_this());
     }
     using executor_type = typename std::decay<NextLayer>::type::executor_type;
+
+    pool                    pool;           // must come first
+
     typename net::steady_timer::rebind_executor<executor_type>::other
                             timer;          // used for timeouts
     close_reason            cr;             // set from received close frame
